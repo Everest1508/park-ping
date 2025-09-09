@@ -27,7 +27,10 @@ urlpatterns = [
     path('parking/', include('parking.urls')),
 ]
 
-# Add media URLs for development
+# Add media and static URLs
+# Media files (user uploads) - always needed for development and production
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# Static files - WhiteNoise handles this in production, but needed for development
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
