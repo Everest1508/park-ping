@@ -1,0 +1,255 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Add Vehicle - ParkPing{% endblock %}
+{% block page_title %}Add Vehicle{% endblock %}
+
+{% block extra_css %}{% endblock %}
+
+{% block content %}
+  <!-- Page Header -->
+  <div class="mb-6">
+    <div class="flex items-center space-x-3">
+      <a href="{% url 'parking:vehicle_list' %}" class="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 transition-colors">
+        <i data-lucide="arrow-left" class="w-4 h-4 mr-1"></i>
+        Back to Vehicles
+      </a>
+    </div>
+    <div class="mt-2">
+      <h1 class="text-2xl font-bold text-gray-900">Add New Vehicle</h1>
+      <p class="mt-1 text-sm text-gray-600">Enter your vehicle details to generate a QR code for parking contact</p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Vehicle Form -->
+    <div class="lg:col-span-2">
+      <div class="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
+        <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
+          <h3 class="text-base font-semibold text-gray-900">Vehicle Information</h3>
+        </div>
+        <div class="p-6">
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- Basic Vehicle Details -->
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 mb-6">
+              <div>
+                <label for="make" class="block text-xs font-medium text-gray-700 mb-2">Make *</label>
+                <input type="text" name="make" id="make" required
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm"
+                  placeholder="e.g., Toyota, Honda, Ford">
+              </div>
+              <div>
+                <label for="model" class="block text-xs font-medium text-gray-700 mb-2">Model *</label>
+                <input type="text" name="model" id="model" required
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm"
+                  placeholder="e.g., Camry, Civic, F-150">
+              </div>
+              <div>
+                <label for="year" class="block text-xs font-medium text-gray-700 mb-2">Year *</label>
+                <input type="number" name="year" id="year" required min="1900" max="2024"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm"
+                  placeholder="2020">
+              </div>
+              <div>
+                <label for="license_plate" class="block text-xs font-medium text-gray-700 mb-2">License Plate *</label>
+                <input type="text" name="license_plate" id="license_plate" required
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm"
+                  placeholder="ABC-1234">
+              </div>
+            </div>
+
+            <!-- Vehicle Type and Color -->
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 mb-6">
+              <div>
+                <label for="vehicle_type" class="block text-xs font-medium text-gray-700 mb-2">Vehicle Type *</label>
+                <select name="vehicle_type" id="vehicle_type" required
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm">
+                  <option value="">Select type</option>
+                  <option value="car">Car</option>
+                  <option value="suv">SUV</option>
+                  <option value="truck">Truck</option>
+                  <option value="motorcycle">Motorcycle</option>
+                  <option value="van">Van</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label for="color" class="block text-xs font-medium text-gray-700 mb-2">Color</label>
+                <input type="text" name="color" id="color"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm"
+                  placeholder="e.g., Red, Blue, White">
+              </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="mb-6">
+              <label for="contact_phone" class="block text-xs font-medium text-gray-700 mb-2">Contact Phone Number *</label>
+              {{ form.contact_phone }}
+              {% if not phone_numbers %}
+                <p class="mt-2 text-xs text-red-600">No phone numbers found. <a href="{% url 'accounts:phone_numbers' %}" class="text-green-600 hover:text-green-800">Add a phone number first</a></p>
+              {% endif %}
+            </div>
+
+            <!-- QR Code Visibility Settings -->
+            <div class="mb-6">
+              <h4 class="text-sm font-semibold text-gray-900 mb-3">QR Code Visibility Settings</h4>
+              <div class="space-y-3">
+                <div class="flex items-center">
+                  <input type="checkbox" name="show_phone" id="show_phone" checked
+                    class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                  <label for="show_phone" class="ml-2 text-xs text-gray-700">Show phone number in QR code</label>
+                </div>
+                <div class="flex items-center">
+                  <input type="checkbox" name="show_name" id="show_name" checked
+                    class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                  <label for="show_name" class="ml-2 text-xs text-gray-700">Show your name in QR code</label>
+                </div>
+                <div class="flex items-center">
+                  <input type="checkbox" name="show_email" id="show_email"
+                    class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                  <label for="show_email" class="ml-2 text-xs text-gray-700">Show email address in QR code</label>
+                </div>
+                <div class="flex items-center">
+                  <input type="checkbox" name="show_vehicle_details" id="show_vehicle_details" checked
+                    class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                  <label for="show_vehicle_details" class="ml-2 text-xs text-gray-700">Show vehicle details in QR code</label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200">
+              <a href="{% url 'parking:vehicle_list' %}" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+                Cancel
+              </a>
+              <button type="submit" class="inline-flex items-center px-6 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white text-sm font-medium rounded-lg hover:from-green-600 hover:to-green-700 shadow-sm hover:shadow-md transition-all duration-300">
+                <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
+                Add Vehicle
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Help Sidebar -->
+    <div class="space-y-6">
+      <!-- How It Works -->
+      <div class="bg-white shadow-sm rounded-xl border border-gray-200 p-4">
+        <h3 class="text-base font-semibold text-gray-900 mb-4">How It Works</h3>
+        <div class="space-y-3">
+          <div class="flex items-start space-x-3">
+            <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <span class="text-xs font-bold text-green-600">1</span>
+            </div>
+            <div>
+              <p class="text-xs font-medium text-gray-900">Enter Vehicle Details</p>
+              <p class="text-xs text-gray-600">Fill in your vehicle's make, model, year, and license plate</p>
+            </div>
+          </div>
+          <div class="flex items-start space-x-3">
+            <div class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <span class="text-xs font-bold text-blue-600">2</span>
+            </div>
+            <div>
+              <p class="text-xs font-medium text-gray-900">Select Contact Number</p>
+              <p class="text-xs text-gray-600">Choose which phone number to display in the QR code</p>
+            </div>
+          </div>
+          <div class="flex items-start space-x-3">
+            <div class="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <span class="text-xs font-bold text-purple-600">3</span>
+            </div>
+            <div>
+              <p class="text-xs font-medium text-gray-900">Generate QR Code</p>
+              <p class="text-xs text-gray-600">System automatically creates a unique QR code for your vehicle</p>
+            </div>
+          </div>
+          <div class="flex items-start space-x-3">
+            <div class="w-6 h-6 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <span class="text-xs font-bold text-orange-600">4</span>
+            </div>
+            <div>
+              <p class="text-xs font-medium text-gray-900">Print & Display</p>
+              <p class="text-xs text-gray-600">Print the QR code and place it on your vehicle</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tips -->
+      <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200">
+        <h3 class="text-base font-semibold text-gray-900 mb-3">💡 Tips</h3>
+        <ul class="space-y-2 text-xs text-gray-700">
+          <li class="flex items-start">
+            <i data-lucide="check" class="w-3 h-3 text-green-500 mr-2 mt-0.5 flex-shrink-0"></i>
+            Use a clear, readable license plate number
+          </li>
+          <li class="flex items-start">
+            <i data-lucide="check" class="w-3 h-3 text-green-500 mr-2 mt-0.5 flex-shrink-0"></i>
+            Choose a phone number you check regularly
+          </li>
+          <li class="flex items-start">
+            <i data-lucide="check" class="w-3 h-3 text-green-500 mr-2 mt-0.5 flex-shrink-0"></i>
+            You can always edit visibility settings later
+          </li>
+          <li class="flex items-start">
+            <i data-lucide="check" class="w-3 h-3 text-green-500 mr-2 mt-0.5 flex-shrink-0"></i>
+            QR codes work best when printed at 3x3 inches or larger
+          </li>
+        </ul>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="bg-white shadow-sm rounded-xl border border-gray-200 p-4">
+        <h3 class="text-base font-semibold text-gray-900 mb-3">Your Stats</h3>
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-gray-600">Total Vehicles</span>
+            <span class="text-sm font-semibold text-gray-900">{{ vehicles.count|default:0 }}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-gray-600">Active QR Codes</span>
+            <span class="text-sm font-semibold text-green-600">{{ active_qr_count|default:0 }}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-gray-600">Phone Numbers</span>
+            <span class="text-sm font-semibold text-blue-600">{{ phone_numbers.count|default:0 }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Initialize Lucide icons
+  document.addEventListener('DOMContentLoaded', function() {
+    lucide.createIcons();
+  });
+
+  // Form validation
+  document.querySelector('form').addEventListener('submit', function(e) {
+    const requiredFields = ['make', 'model', 'year', 'license_plate', 'vehicle_type', 'contact_phone'];
+    let isValid = true;
+    
+    requiredFields.forEach(fieldName => {
+      const field = document.getElementById(fieldName);
+      if (!field.value.trim()) {
+        field.classList.add('border-red-500');
+        isValid = false;
+      } else {
+        field.classList.remove('border-red-500');
+      }
+    });
+    
+    if (!isValid) {
+      e.preventDefault();
+      alert('Please fill in all required fields.');
+    }
+  });
+</script>
+{% endblock %}

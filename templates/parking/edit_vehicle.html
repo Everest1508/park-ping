@@ -1,0 +1,240 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit {{ vehicle.year }} {{ vehicle.make }} {{ vehicle.model }} - ParkPing{% endblock %}
+{% block page_title %}Edit Vehicle{% endblock %}
+
+{% block extra_css %}{% endblock %}
+
+{% block content %}
+  <!-- Page Header -->
+  <div class="mb-6">
+    <div class="flex items-center space-x-3">
+      <a href="{% url 'parking:vehicle_detail' vehicle.pk %}" class="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 transition-colors">
+        <i data-lucide="arrow-left" class="w-4 h-4 mr-1"></i>
+        Back to Vehicle Details
+      </a>
+    </div>
+    <div class="mt-2">
+      <h1 class="text-2xl font-bold text-gray-900">Edit Vehicle</h1>
+      <p class="mt-1 text-sm text-gray-600">Update your vehicle details and contact preferences</p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Vehicle Form -->
+    <div class="lg:col-span-2">
+      <div class="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
+        <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
+          <h3 class="text-base font-semibold text-gray-900">Vehicle Information</h3>
+        </div>
+        <div class="p-6">
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- Basic Vehicle Details -->
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 mb-6">
+              <div>
+                <label for="{{ form.make.id_for_label }}" class="block text-xs font-medium text-gray-700 mb-2">{{ form.make.label }} *</label>
+                {{ form.make }}
+                {% if form.make.errors %}
+                  <p class="mt-1 text-xs text-red-600">{{ form.make.errors.0 }}</p>
+                {% endif %}
+              </div>
+              <div>
+                <label for="{{ form.model.id_for_label }}" class="block text-xs font-medium text-gray-700 mb-2">{{ form.model.label }} *</label>
+                {{ form.model }}
+                {% if form.model.errors %}
+                  <p class="mt-1 text-xs text-red-600">{{ form.model.errors.0 }}</p>
+                {% endif %}
+              </div>
+              <div>
+                <label for="{{ form.year.id_for_label }}" class="block text-xs font-medium text-gray-700 mb-2">{{ form.year.label }} *</label>
+                {{ form.year }}
+                {% if form.year.errors %}
+                  <p class="mt-1 text-xs text-red-600">{{ form.year.errors.0 }}</p>
+                {% endif %}
+              </div>
+              <div>
+                <label for="{{ form.color.id_for_label }}" class="block text-xs font-medium text-gray-700 mb-2">{{ form.color.label }} *</label>
+                {{ form.color }}
+                {% if form.color.errors %}
+                  <p class="mt-1 text-xs text-red-600">{{ form.color.errors.0 }}</p>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Vehicle Type and License Plate -->
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 mb-6">
+              <div>
+                <label for="{{ form.vehicle_type.id_for_label }}" class="block text-xs font-medium text-gray-700 mb-2">{{ form.vehicle_type.label }} *</label>
+                {{ form.vehicle_type }}
+                {% if form.vehicle_type.errors %}
+                  <p class="mt-1 text-xs text-red-600">{{ form.vehicle_type.errors.0 }}</p>
+                {% endif %}
+              </div>
+              <div>
+                <label for="{{ form.license_plate.id_for_label }}" class="block text-xs font-medium text-gray-700 mb-2">{{ form.license_plate.label }} *</label>
+                {{ form.license_plate }}
+                {% if form.license_plate.errors %}
+                  <p class="mt-1 text-xs text-red-600">{{ form.license_plate.errors.0 }}</p>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- VIN (Optional) -->
+            <div class="mb-6">
+              <label for="{{ form.vin.id_for_label }}" class="block text-xs font-medium text-gray-700 mb-2">{{ form.vin.label }}</label>
+              {{ form.vin }}
+              <p class="mt-1 text-xs text-gray-500">Vehicle Identification Number (optional but recommended for verification)</p>
+              {% if form.vin.errors %}
+                <p class="mt-1 text-xs text-red-600">{{ form.vin.errors.0 }}</p>
+              {% endif %}
+            </div>
+
+            <!-- Contact Phone Number -->
+            <div class="mb-6">
+              <label for="{{ form.contact_phone.id_for_label }}" class="block text-xs font-medium text-gray-700 mb-2">{{ form.contact_phone.label }} *</label>
+              {{ form.contact_phone }}
+              {% if form.contact_phone.errors %}
+                <p class="mt-1 text-xs text-red-600">{{ form.contact_phone.errors.0 }}</p>
+              {% endif %}
+              <p class="mt-1 text-xs text-gray-500">
+                This phone number will be shown to people who scan your QR code.
+                <a href="{% url 'accounts:phone_numbers' %}" class="text-green-600 hover:text-green-800">Manage phone numbers</a>
+              </p>
+            </div>
+
+            <!-- Privacy Settings -->
+            <div class="border-t border-gray-200 pt-6">
+              <h4 class="text-sm font-semibold text-gray-900 mb-4">Privacy Settings</h4>
+              <p class="text-xs text-gray-600 mb-4">Choose what information to show when someone scans your QR code:</p>
+              
+              <div class="space-y-3">
+                <div class="flex items-center">
+                  {{ form.show_phone }}
+                  <label for="{{ form.show_phone.id_for_label }}" class="ml-2 block text-sm text-gray-700">
+                    Show phone number
+                    <span class="text-xs text-gray-500 block">Allow people to see and call your contact number</span>
+                  </label>
+                </div>
+                
+                <div class="flex items-center">
+                  {{ form.show_name }}
+                  <label for="{{ form.show_name.id_for_label }}" class="ml-2 block text-sm text-gray-700">
+                    Show your name
+                    <span class="text-xs text-gray-500 block">Display your full name to people who scan the QR code</span>
+                  </label>
+                </div>
+                
+                <div class="flex items-center">
+                  {{ form.show_email }}
+                  <label for="{{ form.show_email.id_for_label }}" class="ml-2 block text-sm text-gray-700">
+                    Show email address
+                    <span class="text-xs text-gray-500 block">Allow people to contact you via email</span>
+                  </label>
+                </div>
+                
+                <div class="flex items-center">
+                  {{ form.show_vehicle_details }}
+                  <label for="{{ form.show_vehicle_details.id_for_label }}" class="ml-2 block text-sm text-gray-700">
+                    Show vehicle details
+                    <span class="text-xs text-gray-500 block">Display make, model, year, color, and license plate</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200">
+              <a href="{% url 'parking:vehicle_detail' vehicle.pk %}" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                Cancel
+              </a>
+              <button type="submit" class="px-6 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white text-sm font-medium rounded-lg hover:from-green-600 hover:to-green-700 shadow-sm hover:shadow-md transition-all duration-300">
+                <i data-lucide="save" class="w-4 h-4 mr-2 inline"></i>
+                Update Vehicle
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar Info -->
+    <div class="space-y-6">
+      <!-- Current Vehicle Info -->
+      <div class="bg-white shadow-sm rounded-xl border border-gray-200 p-4">
+        <h3 class="text-base font-semibold text-gray-900 mb-4">Current Vehicle</h3>
+        <div class="space-y-3">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center shadow-sm">
+              <i data-lucide="car" class="w-5 h-5 text-white"></i>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-900">{{ vehicle.year }} {{ vehicle.make }} {{ vehicle.model }}</p>
+              <p class="text-xs text-gray-600">{{ vehicle.license_plate }} • {{ vehicle.get_vehicle_type_display }}</p>
+            </div>
+          </div>
+          
+          <div class="pt-3 border-t border-gray-200">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-gray-600">QR Code Status:</span>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full {% if vehicle.is_qr_active %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                {% if vehicle.is_qr_active %}
+                  <i data-lucide="check-circle" class="w-3 h-3 mr-1"></i>
+                  Active
+                {% else %}
+                  <i data-lucide="pause-circle" class="w-3 h-3 mr-1"></i>
+                  Inactive
+                {% endif %}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tips -->
+      <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+        <h3 class="text-sm font-semibold text-blue-900 mb-2">💡 Tips</h3>
+        <ul class="text-xs text-blue-800 space-y-1">
+          <li>• Keep your contact information up to date</li>
+          <li>• Consider privacy settings carefully</li>
+          <li>• License plate must be unique</li>
+          <li>• QR code will update automatically after saving</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Lucide icons
+    lucide.createIcons();
+    
+    // Auto-uppercase license plate
+    const licensePlateInput = document.getElementById('{{ form.license_plate.id_for_label }}');
+    if (licensePlateInput) {
+      licensePlateInput.addEventListener('input', function(e) {
+        e.target.value = e.target.value.toUpperCase();
+      });
+    }
+    
+    // Add proper styling to form fields
+    const formFields = document.querySelectorAll('input, select, textarea');
+    formFields.forEach(field => {
+      if (!field.classList.contains('hidden')) {
+        field.classList.add('w-full', 'px-3', 'py-2', 'border', 'border-gray-300', 'rounded-lg', 'shadow-sm', 'focus:outline-none', 'focus:ring-green-500', 'focus:border-green-500', 'text-sm');
+      }
+    });
+    
+    // Style checkboxes specifically
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+      checkbox.classList.add('h-4', 'w-4', 'text-green-600', 'focus:ring-green-500', 'border-gray-300', 'rounded');
+      checkbox.classList.remove('w-full', 'px-3', 'py-2', 'border', 'rounded-lg', 'shadow-sm');
+    });
+  });
+</script>
+{% endblock %}

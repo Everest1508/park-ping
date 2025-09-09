@@ -1,0 +1,225 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ParkPing - Login</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body class="h-full flex" style="background-image: url('{% static 'assets/img/login-bg.jpg' %}'); background-size: cover; background-position: center;">
+
+  <!-- Left Sidebar Login -->
+  <div class="w-full max-w-lg bg-green-600/80 backdrop-blur-md text-white flex flex-col justify-center px-8 py-12">
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold">PARKPING</h1>
+      <p class="mt-2 text-sm text-green-200">Smart Parking Made Easy</p>
+    </div>
+
+
+    <form class="space-y-6" method="post">
+      {% csrf_token %}
+      
+      <!-- Username -->
+      <div>
+        <label for="username" class="block text-sm font-medium">Username</label>
+        <input type="text" id="username" name="username"
+          class="mt-1 block w-full px-4 py-2 rounded-lg text-gray-900 focus:outline-none" 
+          placeholder="Enter your username" required />
+      </div>
+
+      <!-- Password -->
+      <div>
+        <label for="password" class="block text-sm font-medium">Password</label>
+        <input type="password" id="password" name="password"
+          class="mt-1 block w-full px-4 py-2 rounded-lg text-gray-900 focus:outline-none" 
+          placeholder="Enter your password" required />
+        <a href="#" class="text-sm text-green-200 hover:text-white mt-1 inline-block">Forgot password?</a>
+      </div>
+
+      <!-- Button -->
+      <div>
+        <button type="submit"
+          class="w-full py-2 px-4 bg-white text-green-600 font-semibold rounded-lg shadow hover:bg-gray-100">
+          Log In
+        </button>
+      </div>
+    </form>
+
+    <!-- Register -->
+    <p class="mt-6 text-center text-sm text-green-200">
+      Don't have an account?
+      <a href="{% url 'accounts:signup' %}" class="font-medium text-white hover:underline">Register here</a>
+    </p>
+  </div>
+
+  <!-- Right Side Background -->
+  <div class="flex-1 relative">
+    <div class="absolute bottom-6 left-6 text-white text-9xl font-extrabold drop-shadow-lg">
+      PARKPING
+    </div>
+    
+    <!-- Theme Switcher Button -->
+    <div class="absolute top-6 right-6">
+      <button id="theme-switcher" class="bg-white/20 backdrop-blur-sm text-white p-3 rounded-full hover:bg-white/30 transition-all duration-200">
+        <i class="fas fa-palette text-xl"></i>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Theme switching functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      const themeSwitcher = document.getElementById('theme-switcher');
+      const sidebar = document.querySelector('.w-full.max-w-lg');
+      
+      // Get theme from cookie or default to green
+      function getTheme() {
+        return localStorage.getItem('parkping-theme') || 'green';
+      }
+      
+      // Set theme
+      function setTheme(theme) {
+        localStorage.setItem('parkping-theme', theme);
+        
+        if (theme === 'red') {
+          // Red theme
+          sidebar.className = 'w-full max-w-lg bg-red-600/80 backdrop-blur-md text-white flex flex-col justify-center px-8 py-12';
+          
+          // Update text colors
+          const subtitle = document.querySelector('.text-green-200');
+          if (subtitle) subtitle.className = 'mt-2 text-sm text-red-200';
+          
+          const forgotLink = document.querySelector('.text-green-200.hover\\:text-white');
+          if (forgotLink) {
+            forgotLink.className = 'text-sm text-red-200 hover:text-white mt-1 inline-block';
+          }
+          
+          const registerText = document.querySelector('.text-green-200');
+          if (registerText && registerText.textContent.includes('Don\'t have an account?')) {
+            registerText.className = 'mt-6 text-center text-sm text-red-200';
+          }
+          
+          // Update input focus colors
+          const inputs = document.querySelectorAll('input[type="text"], input[type="password"]');
+          inputs.forEach(input => {
+            input.className = input.className.replace('focus:ring-green-400', 'focus:ring-red-400');
+          });
+          
+          // Update button color
+          const button = document.querySelector('button[type="submit"]');
+          if (button) {
+            button.className = 'w-full py-2 px-4 bg-white text-red-600 font-semibold rounded-lg shadow hover:bg-gray-100';
+          }
+        } else {
+          // Green theme (default)
+          sidebar.className = 'w-full max-w-lg bg-green-600/80 backdrop-blur-md text-white flex flex-col justify-center px-8 py-12';
+          
+          // Update text colors
+          const subtitle = document.querySelector('.text-red-200');
+          if (subtitle) subtitle.className = 'mt-2 text-sm text-green-200';
+          
+          const forgotLink = document.querySelector('.text-red-200.hover\\:text-white');
+          if (forgotLink) {
+            forgotLink.className = 'text-sm text-green-200 hover:text-white mt-1 inline-block';
+          }
+          
+          const registerText = document.querySelector('.text-red-200');
+          if (registerText && registerText.textContent.includes('Don\'t have an account?')) {
+            registerText.className = 'mt-6 text-center text-sm text-green-200';
+          }
+          
+          // Update input focus colors
+          const inputs = document.querySelectorAll('input[type="text"], input[type="password"]');
+          inputs.forEach(input => {
+            input.className = input.className.replace('focus:ring-red-400', 'focus:ring-green-400');
+          });
+          
+          // Update button color
+          const button = document.querySelector('button[type="submit"]');
+          if (button) {
+            button.className = 'w-full py-2 px-4 bg-white text-green-600 font-semibold rounded-lg shadow hover:bg-gray-100';
+          }
+        }
+      }
+      
+      // Initialize theme
+      setTheme(getTheme());
+      
+      // Theme switcher click handler
+      themeSwitcher.addEventListener('click', function() {
+        const currentTheme = getTheme();
+        const newTheme = currentTheme === 'green' ? 'red' : 'green';
+        setTheme(newTheme);
+        
+        // Show toast notification
+        Swal.fire({
+          icon: 'success',
+          title: 'Theme Changed',
+          text: `Switched to ${newTheme} theme`,
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 2000,
+          timerProgressBar: true
+        });
+      });
+    });
+
+    // Toast notifications for messages and errors
+    {% if messages %}
+      {% for message in messages %}
+        {% if message.tags == 'error' %}
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: '{{ message }}',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 5000,
+            timerProgressBar: true
+          });
+        {% elif message.tags == 'success' %}
+          Swal.fire({
+            icon: 'success',
+            title: 'Success',
+            text: '{{ message }}',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+          });
+        {% else %}
+          Swal.fire({
+            icon: 'info',
+            title: 'Info',
+            text: '{{ message }}',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 4000,
+            timerProgressBar: true
+          });
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+
+    {% if form.errors %}
+      Swal.fire({
+        icon: 'error',
+        title: 'Login Failed',
+        text: 'Invalid username or password. Please check your credentials and try again.',
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 5000,
+        timerProgressBar: true
+      });
+    {% endif %}
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,72 @@
+{% load static %}
+
+<aside class="fixed left-0 top-0 w-64 h-full bg-white shadow-lg z-50" id="sidebar">
+    <div class="p-6 border-b border-gray-200">
+      <a href="{% url 'home' %}" class="flex items-center space-x-3">
+        <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+          <i class="fas fa-parking text-white text-sm"></i>
+        </div>
+        <span class="text-xl font-bold text-gray-800">ParkPing</span>
+      </a>
+    </div>
+    
+    <nav class="mt-6">
+      <div class="px-6">
+        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Main</p>
+      </div>
+      
+      <ul class="space-y-1 px-3">
+
+        <li>
+          <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+            <div class="w-5 h-5 mr-3 flex items-center justify-center">
+              <i class="fas fa-parking text-sm"></i>
+            </div>
+            <span>My Parking</span>
+          </a>
+        </li>
+
+        <li>
+          <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+            <div class="w-5 h-5 mr-3 flex items-center justify-center">
+              <i class="fas fa-car text-sm"></i>
+            </div>
+            <span>My Vehicles</span>
+          </a>
+        </li>
+      </ul>
+
+      <div class="px-6 mt-8">
+        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Account</p>
+      </div>
+
+      <ul class="space-y-1 px-3">
+        <li>
+          <a href="{% url 'accounts:profile' %}" class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200 {% if request.resolver_match.url_name == 'accounts:profile' %}bg-blue-50 text-blue-700 border-r-2 border-blue-700{% else %}text-gray-700 hover:bg-gray-100{% endif %}">
+            <div class="w-5 h-5 mr-3 flex items-center justify-center">
+              <i class="fas fa-user text-sm"></i>
+            </div>
+            <span>Profile</span>
+          </a>
+        </li>
+
+        <li>
+          <a href="{% url 'accounts:phone_numbers' %}" class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200 {% if request.resolver_match.url_name == 'accounts:phone_numbers' %}bg-blue-50 text-blue-700 border-r-2 border-blue-700{% else %}text-gray-700 hover:bg-gray-100{% endif %}">
+            <div class="w-5 h-5 mr-3 flex items-center justify-center">
+              <i class="fas fa-phone text-sm"></i>
+            </div>
+            <span>Phone Numbers</span>
+          </a>
+        </li>
+
+        <li>
+          <a href="{% url 'accounts:logout' %}" class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-red-50 hover:text-red-700 transition-colors duration-200">
+            <div class="w-5 h-5 mr-3 flex items-center justify-center">
+              <i class="fas fa-sign-out-alt text-sm"></i>
+            </div>
+            <span>Logout</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+</aside>

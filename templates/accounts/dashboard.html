@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - ParkPing{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block extra_css %}{% endblock %}
+
+{% block content %}
+  <!-- Welcome Section -->
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold text-gray-900">Welcome back, {{ user.get_full_name|default:user.username }}!</h1>
+    <p class="mt-1 text-sm text-gray-600">Manage your QR codes and vehicles for smart parking contact.</p>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
+    <!-- Add Vehicle -->
+    <a href="{% url 'parking:add_vehicle' %}" class="group relative overflow-hidden rounded-xl bg-gradient-to-br from-green-50 to-green-100 p-4 shadow-sm hover:shadow-lg transition-all duration-300 border border-green-200 hover:border-green-300">
+      <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-green-200/30 to-green-300/30 rounded-full -translate-y-10 translate-x-10 group-hover:scale-150 transition-transform duration-500"></div>
+      <div class="relative">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300">
+            <i data-lucide="plus" class="w-5 h-5 text-white"></i>
+          </div>
+          <i data-lucide="arrow-right" class="w-4 h-4 text-green-600 group-hover:translate-x-1 transition-transform"></i>
+        </div>
+        <h3 class="text-sm font-bold text-gray-900 mb-1">Add Vehicle</h3>
+        <p class="text-xs text-gray-600">Create new vehicle</p>
+      </div>
+    </a>
+
+    <!-- My Vehicles -->
+    <a href="{% url 'parking:vehicle_list' %}" class="group relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 p-4 shadow-sm hover:shadow-lg transition-all duration-300 border border-blue-200 hover:border-blue-300">
+      <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-200/30 to-blue-300/30 rounded-full -translate-y-10 translate-x-10 group-hover:scale-150 transition-transform duration-500"></div>
+      <div class="relative">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300">
+            <i data-lucide="car" class="w-5 h-5 text-white"></i>
+          </div>
+          <i data-lucide="arrow-right" class="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform"></i>
+        </div>
+        <h3 class="text-sm font-bold text-gray-900 mb-1">My Vehicles</h3>
+        <p class="text-2xl font-bold text-blue-600 mb-1">{{ vehicles.count|default:0 }}</p>
+        <p class="text-xs text-gray-600">Registered</p>
+      </div>
+    </a>
+
+    <!-- QR Codes -->
+    <a href="#" class="group relative overflow-hidden rounded-xl bg-gradient-to-br from-purple-50 to-purple-100 p-4 shadow-sm hover:shadow-lg transition-all duration-300 border border-purple-200 hover:border-purple-300">
+      <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-purple-200/30 to-purple-300/30 rounded-full -translate-y-10 translate-x-10 group-hover:scale-150 transition-transform duration-500"></div>
+      <div class="relative">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300">
+            <i data-lucide="qr-code" class="w-5 h-5 text-white"></i>
+          </div>
+          <i data-lucide="arrow-right" class="w-4 h-4 text-purple-600 group-hover:translate-x-1 transition-transform"></i>
+        </div>
+        <h3 class="text-sm font-bold text-gray-900 mb-1">QR Codes</h3>
+        <p class="text-2xl font-bold text-purple-600 mb-1">{{ vehicles.count|default:0 }}</p>
+        <p class="text-xs text-gray-600">Generated</p>
+      </div>
+    </a>
+
+    <!-- Phone Numbers -->
+    <a href="{% url 'accounts:phone_numbers' %}" class="group relative overflow-hidden rounded-xl bg-gradient-to-br from-orange-50 to-orange-100 p-4 shadow-sm hover:shadow-lg transition-all duration-300 border border-orange-200 hover:border-orange-300">
+      <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-orange-200/30 to-orange-300/30 rounded-full -translate-y-10 translate-x-10 group-hover:scale-150 transition-transform duration-500"></div>
+      <div class="relative">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300">
+            <i data-lucide="phone" class="w-5 h-5 text-white"></i>
+          </div>
+          <i data-lucide="arrow-right" class="w-4 h-4 text-orange-600 group-hover:translate-x-1 transition-transform"></i>
+        </div>
+        <h3 class="text-sm font-bold text-gray-900 mb-1">Contact Numbers</h3>
+        <p class="text-2xl font-bold text-orange-600 mb-1">{{ phone_numbers.count|default:0 }}</p>
+        <p class="text-xs text-gray-600">Available</p>
+      </div>
+    </a>
+  </div>
+
+  <!-- Main Content Grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+    <!-- Recent Vehicles -->
+    <div class="relative overflow-hidden rounded-xl bg-white shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300">
+      <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-500 to-blue-500"></div>
+      <div class="p-4">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-base font-semibold text-gray-900">Recent Vehicles</h3>
+          <a href="{% url 'parking:vehicle_list' %}" class="inline-flex items-center text-xs text-green-600 hover:text-green-800 font-medium">
+            View all
+            <i data-lucide="arrow-right" class="w-3 h-3 ml-1"></i>
+          </a>
+        </div>
+        <div class="space-y-2">
+          {% if vehicles %}
+            {% for vehicle in vehicles|slice:":3" %}
+              <div class="group flex items-center space-x-3 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg hover:from-green-50 hover:to-green-100 transition-all duration-300 border border-gray-200 hover:border-green-200">
+                <div class="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                  <i data-lucide="car" class="w-4 h-4 text-white"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs font-semibold text-gray-900 group-hover:text-green-900">{{ vehicle.year }} {{ vehicle.make }} {{ vehicle.model }}</p>
+                  <p class="text-xs text-gray-600">{{ vehicle.license_plate }} • {{ vehicle.vehicle_type|title }}</p>
+                </div>
+                <div class="flex items-center space-x-1">
+                  <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {% if vehicle.is_qr_active %}bg-green-100 text-green-800 border border-green-200{% else %}bg-gray-100 text-gray-800 border border-gray-200{% endif %}">
+                    {% if vehicle.is_qr_active %}
+                      <i data-lucide="check-circle" class="w-3 h-3 mr-1"></i>
+                      Active
+                    {% else %}
+                      <i data-lucide="pause-circle" class="w-3 h-3 mr-1"></i>
+                      Inactive
+                    {% endif %}
+                  </span>
+                  <a href="{% url 'parking:vehicle_detail' vehicle.pk %}" class="opacity-0 group-hover:opacity-100 text-green-600 hover:text-green-800 transition-opacity">
+                    <i data-lucide="external-link" class="w-3 h-3"></i>
+                  </a>
+                </div>
+              </div>
+            {% endfor %}
+          {% else %}
+            <div class="text-center py-8">
+              <div class="w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center mx-auto mb-3">
+                <i data-lucide="car" class="w-8 h-8 text-gray-400"></i>
+              </div>
+              <h4 class="text-sm font-semibold text-gray-900 mb-1">No vehicles yet</h4>
+              <p class="text-xs text-gray-600 mb-4">Add your first vehicle to start generating QR codes</p>
+              <a href="{% url 'parking:add_vehicle' %}" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white text-xs font-medium rounded-lg hover:from-green-600 hover:to-green-700 shadow-sm hover:shadow-md transition-all duration-300">
+                <i data-lucide="plus" class="w-3 h-3 mr-1"></i>
+                Add Vehicle
+              </a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- QR Code Management -->
+    <div class="relative overflow-hidden rounded-xl bg-white shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300">
+      <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-pink-500"></div>
+      <div class="p-4">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-base font-semibold text-gray-900">QR Code Management</h3>
+          <a href="#" class="inline-flex items-center text-xs text-purple-600 hover:text-purple-800 font-medium">
+            Manage all
+            <i data-lucide="arrow-right" class="w-3 h-3 ml-1"></i>
+          </a>
+        </div>
+        <div class="space-y-2">
+          {% if vehicles %}
+            {% for vehicle in vehicles|slice:":3" %}
+              <div class="group flex items-center space-x-3 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg hover:from-purple-50 hover:to-purple-100 transition-all duration-300 border border-gray-200 hover:border-purple-200">
+                <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                  <i data-lucide="qr-code" class="w-4 h-4 text-white"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs font-semibold text-gray-900 group-hover:text-purple-900">{{ vehicle.license_plate }}</p>
+                  <p class="text-xs text-gray-600">{{ vehicle.make }} {{ vehicle.model }}</p>
+                </div>
+                <div class="flex items-center space-x-1">
+                  {% if vehicle.qr_code %}
+                    <button class="inline-flex items-center px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full hover:bg-green-200 border border-green-200 transition-colors">
+                      <i data-lucide="download" class="w-3 h-3 mr-1"></i>
+                      Download
+                    </button>
+                  {% else %}
+                    <button class="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-800 text-xs font-medium rounded-full hover:bg-gray-200 border border-gray-200 transition-colors">
+                      <i data-lucide="refresh-cw" class="w-3 h-3 mr-1"></i>
+                      Generate
+                    </button>
+                  {% endif %}
+                  <a href="{% url 'parking:customize_qr' vehicle.pk %}" class="opacity-0 group-hover:opacity-100 text-purple-600 hover:text-purple-800 transition-opacity">
+                    <i data-lucide="settings" class="w-3 h-3"></i>
+                  </a>
+                </div>
+              </div>
+            {% endfor %}
+          {% else %}
+            <div class="text-center py-8">
+              <div class="w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center mx-auto mb-3">
+                <i data-lucide="qr-code" class="w-8 h-8 text-gray-400"></i>
+              </div>
+              <h4 class="text-sm font-semibold text-gray-900 mb-1">No QR codes yet</h4>
+              <p class="text-xs text-gray-600 mb-4">Add a vehicle to generate your first QR code</p>
+              <a href="{% url 'parking:add_vehicle' %}" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white text-xs font-medium rounded-lg hover:from-purple-600 hover:to-purple-700 shadow-sm hover:shadow-md transition-all duration-300">
+                <i data-lucide="plus" class="w-3 h-3 mr-1"></i>
+                Add Vehicle
+              </a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- How It Works Section -->
+  <div class="relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 shadow-sm border border-gray-200">
+    <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-200/20 to-blue-200/20 rounded-full -translate-y-16 translate-x-16"></div>
+    <div class="relative p-6">
+      <div class="text-center mb-6">
+        <h3 class="text-lg font-bold text-gray-900 mb-1">How QR Parking Works</h3>
+        <p class="text-sm text-gray-600">Simple steps to get started with smart parking contact</p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Step 1 -->
+        <div class="group text-center">
+          <div class="relative mb-4">
+            <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center mx-auto shadow-sm group-hover:scale-110 transition-transform duration-300">
+              <span class="text-lg font-bold text-white">1</span>
+            </div>
+            <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-green-100 rounded-full flex items-center justify-center">
+              <i data-lucide="car" class="w-3 h-3 text-green-600"></i>
+            </div>
+          </div>
+          <h4 class="text-sm font-semibold text-gray-900 mb-2">Add Your Vehicle</h4>
+          <p class="text-xs text-gray-600 leading-relaxed">Enter your vehicle details and select a contact phone number from your account.</p>
+        </div>
+        
+        <!-- Step 2 -->
+        <div class="group text-center">
+          <div class="relative mb-4">
+            <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mx-auto shadow-sm group-hover:scale-110 transition-transform duration-300">
+              <span class="text-lg font-bold text-white">2</span>
+            </div>
+            <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center">
+              <i data-lucide="qr-code" class="w-3 h-3 text-blue-600"></i>
+            </div>
+          </div>
+          <h4 class="text-sm font-semibold text-gray-900 mb-2">Generate QR Code</h4>
+          <p class="text-xs text-gray-600 leading-relaxed">Our system automatically generates a unique QR code for your vehicle with your contact preferences.</p>
+        </div>
+        
+        <!-- Step 3 -->
+        <div class="group text-center">
+          <div class="relative mb-4">
+            <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mx-auto shadow-sm group-hover:scale-110 transition-transform duration-300">
+              <span class="text-lg font-bold text-white">3</span>
+            </div>
+            <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-purple-100 rounded-full flex items-center justify-center">
+              <i data-lucide="printer" class="w-3 h-3 text-purple-600"></i>
+            </div>
+          </div>
+          <h4 class="text-sm font-semibold text-gray-900 mb-2">Print & Display</h4>
+          <p class="text-xs text-gray-600 leading-relaxed">Print your QR code and display it on your vehicle. When someone scans it, they can contact you directly.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_js %}{% endblock %}

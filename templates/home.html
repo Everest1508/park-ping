@@ -1,0 +1,98 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ParkPing - Smart Parking Solutions</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="h-full bg-gray-100">
+
+  <!-- Navigation -->
+  <nav class="bg-white shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16">
+        <div class="flex items-center">
+          <h1 class="text-2xl font-bold text-green-600">PARKPING</h1>
+        </div>
+        <div class="flex items-center space-x-4">
+          <a href="{% url 'accounts:login' %}" class="text-gray-700 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium">
+            Login
+          </a>
+          <a href="{% url 'accounts:signup' %}" class="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700">
+            Sign Up
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <div class="relative h-screen flex items-center justify-center" 
+    style="background-image: url('{% static 'assets/img/login-bg.jpg' %}'); background-size: cover; background-position: center;">
+    <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+    <div class="relative z-10 text-center text-white px-4">
+      <h1 class="text-5xl md:text-6xl font-extrabold mb-6">PARKPING</h1>
+      <p class="text-xl md:text-2xl mb-8">Smart Parking Made Easy</p>
+      <p class="text-lg mb-8 max-w-2xl mx-auto">
+        Find, reserve, and pay for parking spots with ease. Join thousands of users who trust ParkPing for their parking needs.
+      </p>
+      <div class="space-x-4">
+        <a href="{% url 'accounts:signup' %}" class="bg-green-600 text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-green-700 inline-block">
+          Get Started
+        </a>
+        <a href="{% url 'accounts:login' %}" class="bg-white text-green-600 px-8 py-3 rounded-lg text-lg font-semibold hover:bg-gray-100 inline-block">
+          Sign In
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Features Section -->
+  <div class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl font-bold text-gray-900 mb-4">Why Choose ParkPing?</h2>
+        <p class="text-lg text-gray-600">Smart features that make parking effortless</p>
+      </div>
+      
+      <div class="grid md:grid-cols-3 gap-8">
+        <div class="text-center">
+            <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-qrcode text-green-600 text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">QR Code System</h3>
+          <p class="text-gray-600">Generate unique QR codes for your vehicles and enable easy contact</p>
+        </div>
+        
+        <div class="text-center">
+            <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-shield-alt text-green-600 text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">Privacy Protection</h3>
+          <p class="text-gray-600">Control what information is visible to other users</p>
+        </div>
+        
+        <div class="text-center">
+            <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-mobile-alt text-green-600 text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">Easy Contact</h3>
+          <p class="text-gray-600">Direct call functionality for instant communication</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-gray-800 text-white py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <p>&copy; 2024 ParkPing. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- Font Awesome for icons -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+</body>
+</html>

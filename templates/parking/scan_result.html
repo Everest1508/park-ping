@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vehicle Contact - ParkPing</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .card-shadow { box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); }
+  </style>
+</head>
+<body class="h-full bg-gray-50">
+  <div class="min-h-full flex flex-col">
+    <!-- Header -->
+    <header class="gradient-bg">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div class="flex items-center">
+          <div class="w-8 h-8 bg-white bg-opacity-20 rounded-lg flex items-center justify-center mr-3">
+            <i data-lucide="car" class="text-white w-4 h-4"></i>
+          </div>
+          <h1 class="text-2xl font-bold text-white">PARKPING</h1>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 py-8">
+      <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Contact Card -->
+        <div class="bg-white rounded-2xl card-shadow overflow-hidden">
+          <!-- Card Header -->
+          <div class="bg-gradient-to-r from-green-500 to-green-600 px-6 py-8 text-center">
+            <div class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i data-lucide="car" class="w-8 h-8 text-white"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-white mb-2">Vehicle Contact Information</h2>
+            <p class="text-green-100">The vehicle owner has shared the following information with you</p>
+          </div>
+
+          <!-- Contact Information -->
+          <div class="p-6">
+            {% if contact_info %}
+              <div class="space-y-6">
+                <!-- Vehicle Details -->
+                {% if contact_info.vehicle %}
+                  <div class="border-b border-gray-200 pb-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                      <i data-lucide="car" class="w-5 h-5 mr-2 text-green-600"></i>
+                      Vehicle Details
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div class="bg-gray-50 rounded-lg p-4">
+                        <p class="text-sm text-gray-600">Make & Model</p>
+                        <p class="text-lg font-semibold text-gray-900">{{ contact_info.vehicle.year }} {{ contact_info.vehicle.make }} {{ contact_info.vehicle.model }}</p>
+                      </div>
+                      <div class="bg-gray-50 rounded-lg p-4">
+                        <p class="text-sm text-gray-600">License Plate</p>
+                        <p class="text-lg font-semibold text-gray-900">{{ contact_info.vehicle.license_plate }}</p>
+                      </div>
+                      <div class="bg-gray-50 rounded-lg p-4">
+                        <p class="text-sm text-gray-600">Color</p>
+                        <p class="text-lg font-semibold text-gray-900">{{ contact_info.vehicle.color }}</p>
+                      </div>
+                    </div>
+                  </div>
+                {% endif %}
+
+                <!-- Contact Methods -->
+                <div>
+                  <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <i data-lucide="contact" class="w-5 h-5 mr-2 text-green-600"></i>
+                    Contact Information
+                  </h3>
+                  
+                  <div class="space-y-4">
+                    {% if contact_info.name %}
+                      <div class="flex items-center p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                          <i data-lucide="user" class="w-5 h-5 text-blue-600"></i>
+                        </div>
+                        <div>
+                          <p class="text-sm text-blue-600 font-medium">Owner Name</p>
+                          <p class="text-lg text-blue-900 font-semibold">{{ contact_info.name }}</p>
+                        </div>
+                      </div>
+                    {% endif %}
+
+                    {% if contact_info.phone %}
+                      <div class="flex items-center p-4 bg-green-50 rounded-lg border border-green-200">
+                        <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-4">
+                          <i data-lucide="phone" class="w-5 h-5 text-green-600"></i>
+                        </div>
+                        <div class="flex-1">
+                          <p class="text-sm text-green-600 font-medium">Phone Number</p>
+                          <p class="text-lg text-green-900 font-semibold">{{ contact_info.phone }}</p>
+                        </div>
+                        <a href="tel:{{ contact_info.phone }}" class="ml-4 inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors">
+                          <i data-lucide="phone-call" class="w-4 h-4 mr-2"></i>
+                          Call Now
+                        </a>
+                      </div>
+                    {% endif %}
+
+                    {% if contact_info.email %}
+                      <div class="flex items-center p-4 bg-purple-50 rounded-lg border border-purple-200">
+                        <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mr-4">
+                          <i data-lucide="mail" class="w-5 h-5 text-purple-600"></i>
+                        </div>
+                        <div class="flex-1">
+                          <p class="text-sm text-purple-600 font-medium">Email Address</p>
+                          <p class="text-lg text-purple-900 font-semibold">{{ contact_info.email }}</p>
+                        </div>
+                        <a href="mailto:{{ contact_info.email }}" class="ml-4 inline-flex items-center px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors">
+                          <i data-lucide="send" class="w-4 h-4 mr-2"></i>
+                          Send Email
+                        </a>
+                      </div>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <!-- Additional Actions -->
+                {% if contact_info.phone %}
+                  <div class="border-t border-gray-200 pt-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                      <i data-lucide="message-circle" class="w-5 h-5 mr-2 text-green-600"></i>
+                      Quick Actions
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <a href="tel:{{ contact_info.phone }}" class="flex items-center justify-center px-4 py-3 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors">
+                        <i data-lucide="phone" class="w-4 h-4 mr-2"></i>
+                        Call Owner
+                      </a>
+                      <a href="sms:{{ contact_info.phone }}" class="flex items-center justify-center px-4 py-3 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                        <i data-lucide="message-square" class="w-4 h-4 mr-2"></i>
+                        Send SMS
+                      </a>
+                    </div>
+                  </div>
+                {% endif %}
+              </div>
+            {% else %}
+              <!-- No Contact Info Available -->
+              <div class="text-center py-8">
+                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <i data-lucide="shield-x" class="w-8 h-8 text-gray-400"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">No Contact Information Available</h3>
+                <p class="text-gray-600">The vehicle owner has not shared any contact information publicly.</p>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Footer Info -->
+        <div class="mt-8 text-center">
+          <div class="bg-white rounded-lg p-6 card-shadow">
+            <div class="flex items-center justify-center mb-4">
+              <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                <i data-lucide="shield-check" class="w-4 h-4 text-green-600"></i>
+              </div>
+              <h3 class="text-lg font-semibold text-gray-900">Powered by ParkPing</h3>
+            </div>
+            <p class="text-sm text-gray-600 mb-4">
+              This QR code was generated by ParkPing to help vehicle owners share contact information safely and conveniently.
+            </p>
+            <a href="/" class="inline-flex items-center text-sm text-green-600 hover:text-green-700 font-medium">
+              <i data-lucide="external-link" class="w-4 h-4 mr-1"></i>
+              Learn more about ParkPing
+            </a>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize Lucide icons
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>

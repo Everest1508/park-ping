@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Phone Numbers - ParkPing{% endblock %}
+{% block page_title %}Phone Numbers{% endblock %}
+
+{% block extra_css %}{% endblock %}
+
+{% block content %}
+  <!-- Page Header -->
+  <div class="mb-6">
+    <div class="flex items-center space-x-3">
+      <a href="{% url 'accounts:profile' %}" class="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 transition-colors">
+        <i data-lucide="arrow-left" class="w-4 h-4 mr-1"></i>
+        Back to Profile
+      </a>
+    </div>
+    <div class="mt-2">
+      <h1 class="text-2xl font-bold text-gray-900">Phone Numbers</h1>
+      <p class="mt-1 text-sm text-gray-600">Manage your contact phone numbers for QR codes</p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Add Phone Number Form -->
+    <div class="lg:col-span-2">
+      <div class="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
+        <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
+          <h3 class="text-base font-semibold text-gray-900">Add Phone Number</h3>
+        </div>
+        <div class="p-6">
+          <form method="post">
+            {% csrf_token %}
+            
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 mb-4">
+              <div>
+                <label for="phone_number" class="block text-xs font-medium text-gray-700 mb-2">Phone Number *</label>
+                <input type="tel" name="phone_number" id="phone_number" required
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm"
+                  placeholder="+1234567890">
+              </div>
+              <div>
+                <label for="label" class="block text-xs font-medium text-gray-700 mb-2">Label</label>
+                <input type="text" name="label" id="label"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm"
+                  placeholder="e.g., Work, Home, Mobile">
+              </div>
+            </div>
+            
+            <div class="flex items-center mb-4">
+              <input type="checkbox" name="is_primary" id="is_primary"
+                class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+              <label for="is_primary" class="ml-2 text-xs text-gray-700">Set as primary phone number</label>
+            </div>
+            
+            <button type="submit" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white text-sm font-medium rounded-lg hover:from-green-600 hover:to-green-700 shadow-sm hover:shadow-md transition-all duration-300">
+              <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
+              Add Phone Number
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Help Sidebar -->
+    <div class="space-y-6">
+      <!-- Tips -->
+      <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200">
+        <h3 class="text-base font-semibold text-gray-900 mb-3">💡 Tips</h3>
+        <ul class="space-y-2 text-xs text-gray-700">
+          <li class="flex items-start">
+            <i data-lucide="check" class="w-3 h-3 text-green-500 mr-2 mt-0.5 flex-shrink-0"></i>
+            Use international format (+1234567890)
+          </li>
+          <li class="flex items-start">
+            <i data-lucide="check" class="w-3 h-3 text-green-500 mr-2 mt-0.5 flex-shrink-0"></i>
+            Set one as primary for default selection
+          </li>
+          <li class="flex items-start">
+            <i data-lucide="check" class="w-3 h-3 text-green-500 mr-2 mt-0.5 flex-shrink-0"></i>
+            Use labels to organize different numbers
+          </li>
+        </ul>
+      </div>
+
+      <!-- Stats -->
+      <div class="bg-white shadow-sm rounded-xl border border-gray-200 p-4">
+        <h3 class="text-base font-semibold text-gray-900 mb-3">Your Stats</h3>
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-gray-600">Total Numbers</span>
+            <span class="text-sm font-semibold text-gray-900">{{ phone_numbers.count|default:0 }}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-gray-600">Primary Number</span>
+            <span class="text-sm font-semibold text-green-600">
+              {% for phone in phone_numbers %}
+                {% if phone.is_primary %}{{ phone.phone_number }}{% endif %}
+              {% empty %}
+                None
+              {% endfor %}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phone Numbers List -->
+  {% if phone_numbers %}
+    <div class="mt-6">
+      <div class="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
+        <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
+          <h3 class="text-base font-semibold text-gray-900">Your Phone Numbers</h3>
+        </div>
+        <div class="divide-y divide-gray-200">
+          {% for phone in phone_numbers %}
+            <div class="p-4 hover:bg-gray-50 transition-colors duration-200">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                  <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-sm">
+                    <i data-lucide="phone" class="w-5 h-5 text-white"></i>
+                  </div>
+                  <div>
+                    <div class="flex items-center space-x-2 mb-1">
+                      <h4 class="text-sm font-semibold text-gray-900">{{ phone.phone_number }}</h4>
+                      {% if phone.is_primary %}
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
+                          <i data-lucide="star" class="w-3 h-3 mr-1"></i>
+                          Primary
+                        </span>
+                      {% endif %}
+                    </div>
+                    <p class="text-xs text-gray-600">{{ phone.label|default:"No label" }}</p>
+                  </div>
+                </div>
+                <div class="flex items-center space-x-2">
+                  <a href="{% url 'accounts:edit_phone_number' phone.pk %}" class="inline-flex items-center px-3 py-1.5 bg-orange-100 text-orange-800 text-xs font-medium rounded-lg hover:bg-orange-200 border border-orange-200 transition-colors">
+                    <i data-lucide="edit" class="w-3 h-3 mr-1"></i>
+                    Edit
+                  </a>
+                  <a href="{% url 'accounts:delete_phone_number' phone.pk %}" class="inline-flex items-center px-3 py-1.5 bg-red-100 text-red-800 text-xs font-medium rounded-lg hover:bg-red-200 border border-red-200 transition-colors">
+                    <i data-lucide="trash-2" class="w-3 h-3 mr-1"></i>
+                    Delete
+                  </a>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <!-- Empty State -->
+    <div class="mt-6 text-center py-12">
+      <div class="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center mx-auto mb-6">
+        <i data-lucide="phone" class="w-12 h-12 text-gray-400"></i>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-900 mb-2">No phone numbers yet</h3>
+      <p class="text-sm text-gray-600 mb-6 max-w-md mx-auto">Add your first phone number to start using QR codes for vehicle contact.</p>
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Initialize Lucide icons
+  document.addEventListener('DOMContentLoaded', function() {
+    lucide.createIcons();
+  });
+</script>
+{% endblock %}

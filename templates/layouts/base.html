@@ -1,0 +1,71 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>
+    {% block title %}ParkPing - Smart Parking Solution{% endblock title %}
+  </title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Font Awesome Icons -->
+  <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Custom Tailwind Config -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            'sans': ['Inter', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            primary: {
+              50: '#eff6ff',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  {% block stylesheets %}{% endblock stylesheets %}
+</head>
+
+<body class="bg-gray-50 font-sans">
+  
+  {% if user.is_authenticated %}
+    {% include 'includes/sidebar.html' %}
+  {% endif %}
+
+  <main class="{% if user.is_authenticated %}ml-64{% endif %} min-h-screen">
+    
+    {% if user.is_authenticated %}
+      {% include 'includes/navbar.html' %}
+    {% endif %}
+
+    {% block content %}{% endblock content %}
+
+    {% if user.is_authenticated %}
+      {% include 'includes/footer.html' %}
+    {% endif %}
+
+  </main>
+
+  {% include 'includes/scripts.html' %}
+
+  {% block javascripts %}{% endblock javascripts %}
+
+</body>
+
+</html>
