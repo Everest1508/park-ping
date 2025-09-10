@@ -1,0 +1,289 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Start Parking Session - {{ vehicle.make }} {{ vehicle.model }} - ParkPing{% endblock %}
+{% block page_title %}Start Parking Session{% endblock %}
+
+{% block extra_css %}
+<style>
+  .location-map {
+    min-height: 200px;
+    background: linear-gradient(45deg, #f0f9ff 25%, transparent 25%), 
+                linear-gradient(-45deg, #f0f9ff 25%, transparent 25%), 
+                linear-gradient(45deg, transparent 75%, #f0f9ff 75%), 
+                linear-gradient(-45deg, transparent 75%, #f0f9ff 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+  <!-- Page Header -->
+  <div class="mb-6">
+    <div class="flex items-center space-x-3">
+      <a href="{% url 'parking:vehicle_detail' vehicle.pk %}" class="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 transition-colors">
+        <i data-lucide="arrow-left" class="w-4 h-4 mr-1"></i>
+        Back to Vehicle Details
+      </a>
+    </div>
+    <div class="mt-2">
+      <h1 class="text-2xl font-bold text-gray-900">Start Parking Session</h1>
+      <p class="mt-1 text-sm text-gray-600">Record where you parked your {{ vehicle.make }} {{ vehicle.model }}</p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Parking Session Form -->
+    <div class="lg:col-span-2">
+      <div class="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
+        <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
+          <h3 class="text-base font-semibold text-gray-900">Parking Location Details</h3>
+        </div>
+        <div class="p-6">
+          <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- Form Errors -->
+            {% if form.errors %}
+              <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                <div class="flex items-start">
+                  <i data-lucide="alert-circle" class="w-5 h-5 text-red-500 mt-0.5 mr-3 flex-shrink-0"></i>
+                  <div>
+                    <h3 class="text-sm font-medium text-red-800 mb-2">Please correct the following errors:</h3>
+                    <ul class="text-sm text-red-700 space-y-1">
+                      {% for field, errors in form.errors.items %}
+                        {% for error in errors %}
+                          <li>{{ field|title }}: {{ error }}</li>
+                        {% endfor %}
+                      {% endfor %}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            {% endif %}
+
+            <!-- Location Name -->
+            <div>
+              <label for="{{ form.location_name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                {{ form.location_name.label }} *
+              </label>
+              {{ form.location_name }}
+              {% if form.location_name.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.location_name.errors.0 }}</p>
+              {% endif %}
+              <p class="mt-1 text-xs text-gray-500">Give your parking spot a memorable name</p>
+            </div>
+
+            <!-- Location Address -->
+            <div>
+              <label for="{{ form.location_address.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                {{ form.location_address.label }}
+              </label>
+              {{ form.location_address }}
+              {% if form.location_address.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.location_address.errors.0 }}</p>
+              {% endif %}
+              <p class="mt-1 text-xs text-gray-500">Full address or description of the location</p>
+            </div>
+
+            <!-- Location Coordinates -->
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label for="{{ form.location_lat.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                  {{ form.location_lat.label }}
+                </label>
+                {{ form.location_lat }}
+                {% if form.location_lat.errors %}
+                  <p class="mt-1 text-sm text-red-600">{{ form.location_lat.errors.0 }}</p>
+                {% endif %}
+              </div>
+              <div>
+                <label for="{{ form.location_lng.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                  {{ form.location_lng.label }}
+                </label>
+                {{ form.location_lng }}
+                {% if form.location_lng.errors %}
+                  <p class="mt-1 text-sm text-red-600">{{ form.location_lng.errors.0 }}</p>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Get Current Location Button -->
+            <div class="flex items-center space-x-3">
+              <button type="button" id="get-location" class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                <i data-lucide="map-pin" class="w-4 h-4 mr-2"></i>
+                Get Current Location
+              </button>
+              <span class="text-xs text-gray-500">Click to automatically fill coordinates</span>
+            </div>
+
+            <!-- Notes -->
+            <div>
+              <label for="{{ form.notes.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                {{ form.notes.label }}
+              </label>
+              {{ form.notes }}
+              {% if form.notes.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.notes.errors.0 }}</p>
+              {% endif %}
+              <p class="mt-1 text-xs text-gray-500">Additional details about the parking spot (floor, section, etc.)</p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex space-x-4 pt-6 border-t border-gray-200">
+              <button type="submit" class="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+                <i data-lucide="play" class="w-4 h-4 mr-2 inline"></i>
+                Start Parking Session
+              </button>
+              <a href="{% url 'parking:vehicle_detail' vehicle.pk %}" class="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors text-center">
+                <i data-lucide="x" class="w-4 h-4 mr-2 inline"></i>
+                Cancel
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vehicle Info & Tips -->
+    <div class="space-y-6">
+      <!-- Vehicle Information -->
+      <div class="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
+        <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
+          <h3 class="text-base font-semibold text-gray-900">Vehicle Details</h3>
+        </div>
+        <div class="p-4">
+          <div class="space-y-3 text-sm">
+            <div class="flex justify-between">
+              <span class="text-gray-600">Vehicle:</span>
+              <span class="text-gray-900 font-medium">{{ vehicle.make }} {{ vehicle.model }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Year:</span>
+              <span class="text-gray-900">{{ vehicle.year }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">License Plate:</span>
+              <span class="text-gray-900 font-mono">{{ vehicle.license_plate }}</span>
+            </div>
+            {% if vehicle.color %}
+              <div class="flex justify-between">
+                <span class="text-gray-600">Color:</span>
+                <span class="text-gray-900">{{ vehicle.color }}</span>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Location Preview -->
+      <div class="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
+        <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
+          <h3 class="text-base font-semibold text-gray-900">Location Preview</h3>
+        </div>
+        <div class="p-4">
+          <div id="location-preview" class="location-map rounded-lg border border-gray-300 flex items-center justify-center">
+            <div class="text-center text-gray-500">
+              <i data-lucide="map" class="w-8 h-8 mx-auto mb-2"></i>
+              <p class="text-sm">Location will appear here</p>
+              <p class="text-xs">when coordinates are entered</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Parking Tips -->
+      <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+        <div class="flex items-start">
+          <i data-lucide="lightbulb" class="w-5 h-5 text-blue-500 mt-0.5 mr-3 flex-shrink-0"></i>
+          <div>
+            <h4 class="text-sm font-medium text-blue-800 mb-2">Parking Tips</h4>
+            <ul class="text-sm text-blue-700 space-y-1">
+              <li>• Take a photo of your parking spot</li>
+              <li>• Note landmarks or floor numbers</li>
+              <li>• Record the exact time if needed</li>
+              <li>• Check parking meter requirements</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const getLocationBtn = document.getElementById('get-location');
+    const latInput = document.getElementById('{{ form.location_lat.id_for_label }}');
+    const lngInput = document.getElementById('{{ form.location_lng.id_for_label }}');
+    const locationPreview = document.getElementById('location-preview');
+    
+    // Get current location
+    getLocationBtn.addEventListener('click', function() {
+      if (navigator.geolocation) {
+        getLocationBtn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 mr-2 animate-spin"></i>Getting location...';
+        getLocationBtn.disabled = true;
+        
+        navigator.geolocation.getCurrentPosition(
+          function(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            
+            latInput.value = lat.toFixed(6);
+            lngInput.value = lng.toFixed(6);
+            
+            updateLocationPreview(lat, lng);
+            
+            getLocationBtn.innerHTML = '<i data-lucide="map-pin" class="w-4 h-4 mr-2"></i>Location Updated!';
+            getLocationBtn.classList.add('bg-green-50', 'border-green-300', 'text-green-700');
+            
+            setTimeout(() => {
+              getLocationBtn.innerHTML = '<i data-lucide="map-pin" class="w-4 h-4 mr-2"></i>Get Current Location';
+              getLocationBtn.classList.remove('bg-green-50', 'border-green-300', 'text-green-700');
+              getLocationBtn.disabled = false;
+            }, 2000);
+          },
+          function(error) {
+            console.error('Error getting location:', error);
+            getLocationBtn.innerHTML = '<i data-lucide="map-pin" class="w-4 h-4 mr-2"></i>Location Error';
+            getLocationBtn.classList.add('bg-red-50', 'border-red-300', 'text-red-700');
+            
+            setTimeout(() => {
+              getLocationBtn.innerHTML = '<i data-lucide="map-pin" class="w-4 h-4 mr-2"></i>Get Current Location';
+              getLocationBtn.classList.remove('bg-red-50', 'border-red-300', 'text-red-700');
+              getLocationBtn.disabled = false;
+            }, 2000);
+          }
+        );
+      } else {
+        alert('Geolocation is not supported by this browser.');
+      }
+    });
+    
+    // Update location preview when coordinates change
+    function updateLocationPreview(lat, lng) {
+      locationPreview.innerHTML = `
+        <div class="text-center text-green-600">
+          <i data-lucide="map-pin" class="w-8 h-8 mx-auto mb-2"></i>
+          <p class="text-sm font-medium">Location Set</p>
+          <p class="text-xs">${lat.toFixed(4)}, ${lng.toFixed(4)}</p>
+        </div>
+      `;
+    }
+    
+    // Listen for manual coordinate changes
+    [latInput, lngInput].forEach(input => {
+      input.addEventListener('input', function() {
+        const lat = parseFloat(latInput.value);
+        const lng = parseFloat(lngInput.value);
+        
+        if (!isNaN(lat) && !isNaN(lng)) {
+          updateLocationPreview(lat, lng);
+        }
+      });
+    });
+  });
+</script>
+{% endblock %}

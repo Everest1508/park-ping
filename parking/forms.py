@@ -30,9 +30,17 @@ class VehicleForm(forms.ModelForm):
         
         if self.user:
             # Filter phone numbers to only show user's phone numbers
-            self.fields['contact_phone'].queryset = UserPhoneNumber.objects.filter(user=self.user)
-            self.fields['contact_phone'].empty_label = "Select a phone number"
-            self.fields['contact_phone'].label = "Contact Phone Number"
+            phone_numbers = UserPhoneNumber.objects.filter(user=self.user)
+            self.fields['contact_phone'].queryset = phone_numbers
+            
+            if phone_numbers.exists():
+                self.fields['contact_phone'].empty_label = "Select a phone number"
+                self.fields['contact_phone'].label = "Contact Phone Number"
+            else:
+                self.fields['contact_phone'].empty_label = "No phone numbers available - Add one first"
+                self.fields['contact_phone'].label = "Contact Phone Number (Optional)"
+                self.fields['contact_phone'].required = False
+                self.fields['contact_phone'].help_text = "Add a phone number in your profile to enable contact features"
     
     def clean_license_plate(self):
         license_plate = self.cleaned_data['license_plate']
@@ -123,21 +131,22 @@ class QRCodeCustomizationForm(forms.Form):
 class SubscriptionPlanSelectionForm(forms.Form):
     """Form for selecting subscription plans"""
     
-    plan = forms.ModelChoiceField(
-        queryset=SubscriptionPlan.objects.filter(is_active=True),
-        empty_label=None,
-        widget=forms.RadioSelect,
-        label='Select Plan'
-    )
+    BILLING_CYCLE_CHOICES = [
+        ('monthly', 'Monthly'),
+        ('yearly', 'Yearly'),
+    ]
     
     billing_cycle = forms.ChoiceField(
-        choices=[
-            ('monthly', 'Monthly'),
-            ('yearly', 'Yearly (Save 20%)'),
-        ],
+        choices=BILLING_CYCLE_CHOICES,
         initial='monthly',
         widget=forms.RadioSelect,
-        label='Billing Cycle'
+        label='Billing Cycle',
+        required=False  # Free plans don't need billing cycle
+    )
+    
+    agree_terms = forms.BooleanField(
+        required=True,
+        label='I agree to the Terms of Service and Privacy Policy'
     )
     
     auto_renew = forms.BooleanField(
@@ -147,13 +156,6 @@ class SubscriptionPlanSelectionForm(forms.Form):
         help_text='Automatically renew your subscription when it expires'
     )
     
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Customize the plan choices to show pricing
-        self.fields['plan'].choices = [
-            (plan.id, f"{plan.name} - ${plan.price}/{plan.billing_cycle}")
-            for plan in SubscriptionPlan.objects.filter(is_active=True)
-        ]
 
 
 class VehicleSearchForm(forms.Form):

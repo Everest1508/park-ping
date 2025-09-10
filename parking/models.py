@@ -93,6 +93,13 @@ class Vehicle(models.Model):
     qr_unique_id = models.UUIDField(default=uuid.uuid4, unique=True)
     is_qr_active = models.BooleanField(default=True)
     
+    # QR Code customization settings
+    qr_primary_color = models.CharField(max_length=7, default='#000000', help_text="Primary QR color")
+    qr_secondary_color = models.CharField(max_length=7, default='#FFFFFF', help_text="Secondary QR color")
+    qr_include_logo = models.BooleanField(default=False, help_text="Include logo in QR code")
+    qr_logo_size = models.CharField(max_length=10, default='medium', choices=[('small', 'Small'), ('medium', 'Medium'), ('large', 'Large')])
+    qr_size = models.CharField(max_length=10, default='medium', choices=[('small', 'Small (200x200)'), ('medium', 'Medium (300x300)'), ('large', 'Large (400x400)')])
+    
     # Visibility settings
     show_phone = models.BooleanField(default=True)
     show_name = models.BooleanField(default=False)

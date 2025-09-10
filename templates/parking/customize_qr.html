@@ -1,0 +1,427 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Customize QR Code - {{ vehicle.make }} {{ vehicle.model }} - ParkPing{% endblock %}
+{% block page_title %}Customize QR Code{% endblock %}
+
+{% block extra_css %}
+<style>
+  .color-option {
+    transition: all 0.2s ease;
+  }
+  .color-option:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  .color-option input:checked + label {
+    ring: 2px;
+    ring-color: #059669;
+    ring-offset: 2px;
+  }
+  .preview-qr {
+    background: linear-gradient(45deg, #f0f0f0 25%, transparent 25%), 
+                linear-gradient(-45deg, #f0f0f0 25%, transparent 25%), 
+                linear-gradient(45deg, transparent 75%, #f0f0f0 75%), 
+                linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+  <!-- Page Header -->
+  <div class="mb-6">
+    <div class="flex items-center space-x-3">
+      <a href="{% url 'parking:vehicle_detail' vehicle.pk %}" class="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 transition-colors">
+        <i data-lucide="arrow-left" class="w-4 h-4 mr-1"></i>
+        Back to Vehicle Details
+      </a>
+    </div>
+    <div class="mt-2">
+      <h1 class="text-2xl font-bold text-gray-900">Customize QR Code</h1>
+      <p class="mt-1 text-sm text-gray-600">Personalize the appearance of your QR code for {{ vehicle.make }} {{ vehicle.model }}</p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Customization Form -->
+    <div class="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
+      <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
+        <h3 class="text-base font-semibold text-gray-900">QR Code Settings</h3>
+      </div>
+      <div class="p-6">
+        <form method="post" class="space-y-6">
+          {% csrf_token %}
+          
+          <!-- Form Errors -->
+          {% if form.errors %}
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div class="flex items-start">
+                <i data-lucide="alert-circle" class="w-5 h-5 text-red-500 mt-0.5 mr-3 flex-shrink-0"></i>
+                <div>
+                  <h3 class="text-sm font-medium text-red-800 mb-2">Please correct the following errors:</h3>
+                  <ul class="text-sm text-red-700 space-y-1">
+                    {% for field, errors in form.errors.items %}
+                      {% for error in errors %}
+                        <li>{{ field|title }}: {{ error }}</li>
+                      {% endfor %}
+                    {% endfor %}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          {% endif %}
+
+          <!-- Primary Color Selection -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">{{ form.primary_color.label }}</label>
+            <p class="text-xs text-gray-500 mb-4">{{ form.primary_color.help_text }}</p>
+            <div class="grid grid-cols-5 gap-3">
+              <div class="color-option">
+                <input type="radio" name="primary_color" value="#000000" id="id_primary_color_0" class="sr-only" {% if form.primary_color.value == "#000000" or not form.primary_color.value %}checked{% endif %}>
+                <label for="id_primary_color_0" class="block w-12 h-12 rounded-lg border-2 border-gray-300 cursor-pointer" style="background-color: #000000;">
+                  <span class="sr-only">Black</span>
+                </label>
+              </div>
+              <div class="color-option">
+                <input type="radio" name="primary_color" value="#FFFFFF" id="id_primary_color_1" class="sr-only" {% if form.primary_color.value == "#FFFFFF" %}checked{% endif %}>
+                <label for="id_primary_color_1" class="block w-12 h-12 rounded-lg border-2 border-gray-300 cursor-pointer" style="background-color: #FFFFFF;">
+                  <span class="sr-only">White</span>
+                </label>
+              </div>
+              <div class="color-option">
+                <input type="radio" name="primary_color" value="#FF0000" id="id_primary_color_2" class="sr-only" {% if form.primary_color.value == "#FF0000" %}checked{% endif %}>
+                <label for="id_primary_color_2" class="block w-12 h-12 rounded-lg border-2 border-gray-300 cursor-pointer" style="background-color: #FF0000;">
+                  <span class="sr-only">Red</span>
+                </label>
+              </div>
+              <div class="color-option">
+                <input type="radio" name="primary_color" value="#00FF00" id="id_primary_color_3" class="sr-only" {% if form.primary_color.value == "#00FF00" %}checked{% endif %}>
+                <label for="id_primary_color_3" class="block w-12 h-12 rounded-lg border-2 border-gray-300 cursor-pointer" style="background-color: #00FF00;">
+                  <span class="sr-only">Green</span>
+                </label>
+              </div>
+              <div class="color-option">
+                <input type="radio" name="primary_color" value="#0000FF" id="id_primary_color_4" class="sr-only" {% if form.primary_color.value == "#0000FF" %}checked{% endif %}>
+                <label for="id_primary_color_4" class="block w-12 h-12 rounded-lg border-2 border-gray-300 cursor-pointer" style="background-color: #0000FF;">
+                  <span class="sr-only">Blue</span>
+                </label>
+              </div>
+              <div class="color-option">
+                <input type="radio" name="primary_color" value="#FFFF00" id="id_primary_color_5" class="sr-only" {% if form.primary_color.value == "#FFFF00" %}checked{% endif %}>
+                <label for="id_primary_color_5" class="block w-12 h-12 rounded-lg border-2 border-gray-300 cursor-pointer" style="background-color: #FFFF00;">
+                  <span class="sr-only">Yellow</span>
+                </label>
+              </div>
+              <div class="color-option">
+                <input type="radio" name="primary_color" value="#FF00FF" id="id_primary_color_6" class="sr-only" {% if form.primary_color.value == "#FF00FF" %}checked{% endif %}>
+                <label for="id_primary_color_6" class="block w-12 h-12 rounded-lg border-2 border-gray-300 cursor-pointer" style="background-color: #FF00FF;">
+                  <span class="sr-only">Magenta</span>
+                </label>
+              </div>
+              <div class="color-option">
+                <input type="radio" name="primary_color" value="#00FFFF" id="id_primary_color_7" class="sr-only" {% if form.primary_color.value == "#00FFFF" %}checked{% endif %}>
+                <label for="id_primary_color_7" class="block w-12 h-12 rounded-lg border-2 border-gray-300 cursor-pointer" style="background-color: #00FFFF;">
+                  <span class="sr-only">Cyan</span>
+                </label>
+              </div>
+              <div class="color-option">
+                <input type="radio" name="primary_color" value="#FFA500" id="id_primary_color_8" class="sr-only" {% if form.primary_color.value == "#FFA500" %}checked{% endif %}>
+                <label for="id_primary_color_8" class="block w-12 h-12 rounded-lg border-2 border-gray-300 cursor-pointer" style="background-color: #FFA500;">
+                  <span class="sr-only">Orange</span>
+                </label>
+              </div>
+              <div class="color-option">
+                <input type="radio" name="primary_color" value="#800080" id="id_primary_color_9" class="sr-only" {% if form.primary_color.value == "#800080" %}checked{% endif %}>
+                <label for="id_primary_color_9" class="block w-12 h-12 rounded-lg border-2 border-gray-300 cursor-pointer" style="background-color: #800080;">
+                  <span class="sr-only">Purple</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Secondary Color Selection -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">{{ form.secondary_color.label }}</label>
+            <p class="text-xs text-gray-500 mb-4">{{ form.secondary_color.help_text }}</p>
+            <div class="grid grid-cols-5 gap-3">
+              <div class="color-option">
+                <input type="radio" name="secondary_color" value="#000000" id="id_secondary_color_0" class="sr-only" {% if form.secondary_color.value == "#000000" %}checked{% endif %}>
+                <label for="id_secondary_color_0" class="block w-12 h-12 rounded-lg border-2 border-gray-300 cursor-pointer" style="background-color: #000000;">
+                  <span class="sr-only">Black</span>
+                </label>
+              </div>
+              <div class="color-option">
+                <input type="radio" name="secondary_color" value="#FFFFFF" id="id_secondary_color_1" class="sr-only" {% if form.secondary_color.value == "#FFFFFF" or not form.secondary_color.value %}checked{% endif %}>
+                <label for="id_secondary_color_1" class="block w-12 h-12 rounded-lg border-2 border-gray-300 cursor-pointer" style="background-color: #FFFFFF;">
+                  <span class="sr-only">White</span>
+                </label>
+              </div>
+              <div class="color-option">
+                <input type="radio" name="secondary_color" value="#FF0000" id="id_secondary_color_2" class="sr-only" {% if form.secondary_color.value == "#FF0000" %}checked{% endif %}>
+                <label for="id_secondary_color_2" class="block w-12 h-12 rounded-lg border-2 border-gray-300 cursor-pointer" style="background-color: #FF0000;">
+                  <span class="sr-only">Red</span>
+                </label>
+              </div>
+              <div class="color-option">
+                <input type="radio" name="secondary_color" value="#00FF00" id="id_secondary_color_3" class="sr-only" {% if form.secondary_color.value == "#00FF00" %}checked{% endif %}>
+                <label for="id_secondary_color_3" class="block w-12 h-12 rounded-lg border-2 border-gray-300 cursor-pointer" style="background-color: #00FF00;">
+                  <span class="sr-only">Green</span>
+                </label>
+              </div>
+              <div class="color-option">
+                <input type="radio" name="secondary_color" value="#0000FF" id="id_secondary_color_4" class="sr-only" {% if form.secondary_color.value == "#0000FF" %}checked{% endif %}>
+                <label for="id_secondary_color_4" class="block w-12 h-12 rounded-lg border-2 border-gray-300 cursor-pointer" style="background-color: #0000FF;">
+                  <span class="sr-only">Blue</span>
+                </label>
+              </div>
+              <div class="color-option">
+                <input type="radio" name="secondary_color" value="#FFFF00" id="id_secondary_color_5" class="sr-only" {% if form.secondary_color.value == "#FFFF00" %}checked{% endif %}>
+                <label for="id_secondary_color_5" class="block w-12 h-12 rounded-lg border-2 border-gray-300 cursor-pointer" style="background-color: #FFFF00;">
+                  <span class="sr-only">Yellow</span>
+                </label>
+              </div>
+              <div class="color-option">
+                <input type="radio" name="secondary_color" value="#FF00FF" id="id_secondary_color_6" class="sr-only" {% if form.secondary_color.value == "#FF00FF" %}checked{% endif %}>
+                <label for="id_secondary_color_6" class="block w-12 h-12 rounded-lg border-2 border-gray-300 cursor-pointer" style="background-color: #FF00FF;">
+                  <span class="sr-only">Magenta</span>
+                </label>
+              </div>
+              <div class="color-option">
+                <input type="radio" name="secondary_color" value="#00FFFF" id="id_secondary_color_7" class="sr-only" {% if form.secondary_color.value == "#00FFFF" %}checked{% endif %}>
+                <label for="id_secondary_color_7" class="block w-12 h-12 rounded-lg border-2 border-gray-300 cursor-pointer" style="background-color: #00FFFF;">
+                  <span class="sr-only">Cyan</span>
+                </label>
+              </div>
+              <div class="color-option">
+                <input type="radio" name="secondary_color" value="#FFA500" id="id_secondary_color_8" class="sr-only" {% if form.secondary_color.value == "#FFA500" %}checked{% endif %}>
+                <label for="id_secondary_color_8" class="block w-12 h-12 rounded-lg border-2 border-gray-300 cursor-pointer" style="background-color: #FFA500;">
+                  <span class="sr-only">Orange</span>
+                </label>
+              </div>
+              <div class="color-option">
+                <input type="radio" name="secondary_color" value="#800080" id="id_secondary_color_9" class="sr-only" {% if form.secondary_color.value == "#800080" %}checked{% endif %}>
+                <label for="id_secondary_color_9" class="block w-12 h-12 rounded-lg border-2 border-gray-300 cursor-pointer" style="background-color: #800080;">
+                  <span class="sr-only">Purple</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Logo Settings -->
+          <div class="border-t border-gray-200 pt-6">
+            <h4 class="text-sm font-medium text-gray-900 mb-4">Logo Settings</h4>
+            
+            <!-- Include Logo Checkbox -->
+            <div class="flex items-start space-x-3 mb-4">
+              {{ form.include_logo }}
+              <div class="flex-1">
+                <label for="{{ form.include_logo.id_for_label }}" class="text-sm font-medium text-gray-700 cursor-pointer">
+                  {{ form.include_logo.label }}
+                </label>
+                <p class="text-xs text-gray-500 mt-1">{{ form.include_logo.help_text }}</p>
+              </div>
+            </div>
+
+            <!-- Logo Size Selection -->
+            <div class="ml-6" id="logo-size-section">
+              <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.logo_size.label }}</label>
+              <div class="space-y-2">
+                {% for choice in form.logo_size %}
+                  <div class="flex items-center">
+                    {{ choice.tag }}
+                    <label for="{{ choice.id_for_label }}" class="ml-2 text-sm text-gray-700 cursor-pointer">
+                      {{ choice.choice_label }}
+                    </label>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+
+          <!-- QR Code Size -->
+          <div class="border-t border-gray-200 pt-6">
+            <h4 class="text-sm font-medium text-gray-900 mb-4">QR Code Size</h4>
+            <div class="space-y-3">
+              <div class="flex items-center">
+                <input type="radio" name="qr_size" value="small" id="id_qr_size_0" class="text-green-600 focus:ring-green-500" {% if form.qr_size.value == "small" %}checked{% endif %}>
+                <label for="id_qr_size_0" class="ml-3 flex-1 cursor-pointer">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <span class="text-sm font-medium text-gray-900">Small</span>
+                      <span class="text-sm text-gray-500 ml-2">(200x200 pixels)</span>
+                    </div>
+                    <div class="w-12 h-12 bg-gray-200 border border-gray-300 rounded flex items-center justify-center">
+                      <div class="w-6 h-6 bg-gray-800 rounded-sm"></div>
+                    </div>
+                  </div>
+                  <p class="text-xs text-gray-500 mt-1">Compact size, good for small spaces</p>
+                </label>
+              </div>
+              
+              <div class="flex items-center">
+                <input type="radio" name="qr_size" value="medium" id="id_qr_size_1" class="text-green-600 focus:ring-green-500" {% if form.qr_size.value == "medium" or not form.qr_size.value %}checked{% endif %}>
+                <label for="id_qr_size_1" class="ml-3 flex-1 cursor-pointer">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <span class="text-sm font-medium text-gray-900">Medium</span>
+                      <span class="text-sm text-gray-500 ml-2">(300x300 pixels)</span>
+                    </div>
+                    <div class="w-12 h-12 bg-gray-200 border border-gray-300 rounded flex items-center justify-center">
+                      <div class="w-8 h-8 bg-gray-800 rounded-sm"></div>
+                    </div>
+                  </div>
+                  <p class="text-xs text-gray-500 mt-1">Recommended size for most uses</p>
+                </label>
+              </div>
+              
+              <div class="flex items-center">
+                <input type="radio" name="qr_size" value="large" id="id_qr_size_2" class="text-green-600 focus:ring-green-500" {% if form.qr_size.value == "large" %}checked{% endif %}>
+                <label for="id_qr_size_2" class="ml-3 flex-1 cursor-pointer">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <span class="text-sm font-medium text-gray-900">Large</span>
+                      <span class="text-sm text-gray-500 ml-2">(400x400 pixels)</span>
+                    </div>
+                    <div class="w-12 h-12 bg-gray-200 border border-gray-300 rounded flex items-center justify-center">
+                      <div class="w-10 h-10 bg-gray-800 rounded-sm"></div>
+                    </div>
+                  </div>
+                  <p class="text-xs text-gray-500 mt-1">High quality for printing and large displays</p>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex space-x-4 pt-6 border-t border-gray-200">
+            <button type="submit" class="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+              <i data-lucide="save" class="w-4 h-4 mr-2 inline"></i>
+              Apply Customization
+            </button>
+            <a href="{% url 'parking:vehicle_detail' vehicle.pk %}" class="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors text-center">
+              <i data-lucide="x" class="w-4 h-4 mr-2 inline"></i>
+              Cancel
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Preview Section -->
+    <div class="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
+      <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
+        <h3 class="text-base font-semibold text-gray-900">Preview</h3>
+      </div>
+      <div class="p-6">
+        <!-- Current QR Code -->
+        <div class="text-center mb-6">
+          <h4 class="text-sm font-medium text-gray-700 mb-4">Current QR Code</h4>
+          <div class="inline-block p-4 bg-white border-2 border-dashed border-gray-300 rounded-lg preview-qr">
+            {% if vehicle.qr_code %}
+              <img src="{{ vehicle.qr_code.url }}" alt="Current QR Code" class="w-48 h-48 mx-auto">
+            {% else %}
+              <div class="w-48 h-48 bg-gray-100 rounded-lg flex items-center justify-center">
+                <i data-lucide="qr-code" class="w-12 h-12 text-gray-400"></i>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Vehicle Info -->
+        <div class="bg-gray-50 rounded-lg p-4">
+          <h4 class="text-sm font-medium text-gray-900 mb-3">Vehicle Details</h4>
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between">
+              <span class="text-gray-600">Vehicle:</span>
+              <span class="text-gray-900 font-medium">{{ vehicle.make }} {{ vehicle.model }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Year:</span>
+              <span class="text-gray-900">{{ vehicle.year }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">License Plate:</span>
+              <span class="text-gray-900 font-mono">{{ vehicle.license_plate }}</span>
+            </div>
+            {% if vehicle.color %}
+              <div class="flex justify-between">
+                <span class="text-gray-600">Color:</span>
+                <span class="text-gray-900">{{ vehicle.color }}</span>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Feature Notice -->
+        <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div class="flex items-start">
+            <i data-lucide="star" class="w-5 h-5 text-blue-500 mt-0.5 mr-3 flex-shrink-0"></i>
+            <div>
+              <h4 class="text-sm font-medium text-blue-800 mb-1">Premium Feature</h4>
+              <p class="text-sm text-blue-700">QR code customization is available with your {{ user.current_plan.name }} plan. Create unique, branded QR codes that stand out!</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const includeLogoCheckbox = document.getElementById('{{ form.include_logo.id_for_label }}');
+    const logoSizeSection = document.getElementById('logo-size-section');
+    
+    function toggleLogoSize() {
+      if (includeLogoCheckbox.checked) {
+        logoSizeSection.style.display = 'block';
+        logoSizeSection.style.opacity = '1';
+      } else {
+        logoSizeSection.style.display = 'none';
+        logoSizeSection.style.opacity = '0.5';
+      }
+    }
+    
+    // Initial state
+    toggleLogoSize();
+    
+    // Toggle on checkbox change
+    includeLogoCheckbox.addEventListener('change', toggleLogoSize);
+    
+    // Add visual feedback for color selections
+    const colorInputs = document.querySelectorAll('input[type="radio"]');
+    colorInputs.forEach(input => {
+      input.addEventListener('change', function() {
+        // Remove previous selections in the same group
+        const groupName = this.name;
+        const groupInputs = document.querySelectorAll(`input[name="${groupName}"]`);
+        groupInputs.forEach(groupInput => {
+          const label = groupInput.nextElementSibling;
+          if (label) {
+            label.classList.remove('ring-2', 'ring-green-500', 'ring-offset-2');
+          }
+        });
+        
+        // Add selection styling to current choice
+        const label = this.nextElementSibling;
+        if (label) {
+          label.classList.add('ring-2', 'ring-green-500', 'ring-offset-2');
+        }
+      });
+    });
+    
+    // Set initial selected states
+    colorInputs.forEach(input => {
+      if (input.checked) {
+        const label = input.nextElementSibling;
+        if (label) {
+          label.classList.add('ring-2', 'ring-green-500', 'ring-offset-2');
+        }
+      }
+    });
+  });
+</script>
+{% endblock %}

@@ -32,6 +32,25 @@
           <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             
+            <!-- Form Errors -->
+            {% if form.errors %}
+              <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+                <div class="flex items-start">
+                  <i data-lucide="alert-circle" class="w-5 h-5 text-red-500 mt-0.5 mr-3 flex-shrink-0"></i>
+                  <div>
+                    <h3 class="text-sm font-medium text-red-800 mb-2">Please correct the following errors:</h3>
+                    <ul class="text-sm text-red-700 space-y-1">
+                      {% for field, errors in form.errors.items %}
+                        {% for error in errors %}
+                          <li>{{ field|title }}: {{ error }}</li>
+                        {% endfor %}
+                      {% endfor %}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            {% endif %}
+            
             <!-- Basic Vehicle Details -->
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 mb-6">
               <div>

@@ -91,6 +91,12 @@ def add_vehicle(request):
             
             messages.success(request, 'Vehicle added successfully!')
             return redirect('parking:vehicle_list')
+        else:
+            # Form is not valid, show errors
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'{field}: {error}')
+            messages.error(request, 'Please correct the errors below and try again.')
     else:
         form = VehicleForm(user=request.user)
     
@@ -121,8 +127,14 @@ def edit_vehicle(request, pk):
         form = VehicleForm(request.POST, instance=vehicle, user=request.user)
         if form.is_valid():
             form.save()
-        messages.success(request, 'Vehicle updated successfully!')
-        return redirect('parking:vehicle_list')
+            messages.success(request, 'Vehicle updated successfully!')
+            return redirect('parking:vehicle_list')
+        else:
+            # Form is not valid, show errors
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'{field}: {error}')
+            messages.error(request, 'Please correct the errors below and try again.')
     else:
         form = VehicleForm(instance=vehicle, user=request.user)
     
@@ -193,8 +205,8 @@ def toggle_qr_code(request, pk):
     return redirect('parking:vehicle_detail', pk=pk)
 
 
-def generate_qr_code(vehicle, request=None):
-    """Generate QR code for a vehicle"""
+def generate_qr_code(vehicle, request=None, custom_settings=None):
+    """Generate QR code for a vehicle with optional customization"""
     from django.urls import reverse
     from django.conf import settings
     
@@ -213,20 +225,46 @@ def generate_qr_code(vehicle, request=None):
         # In production, you should set SITE_URL in settings
         qr_data = f"http://127.0.0.1:8000{qr_url}"
     
+    # Get customization settings from vehicle or custom_settings parameter
+    if custom_settings:
+        primary_color = custom_settings.get('primary_color', vehicle.qr_primary_color)
+        secondary_color = custom_settings.get('secondary_color', vehicle.qr_secondary_color)
+        include_logo = custom_settings.get('include_logo', vehicle.qr_include_logo)
+        logo_size = custom_settings.get('logo_size', vehicle.qr_logo_size)
+        qr_size = custom_settings.get('qr_size', vehicle.qr_size)
+    else:
+        primary_color = vehicle.qr_primary_color
+        secondary_color = vehicle.qr_secondary_color
+        include_logo = vehicle.qr_include_logo
+        logo_size = vehicle.qr_logo_size
+        qr_size = vehicle.qr_size
+    
+    # Convert hex colors to RGB tuples for PIL compatibility
+    def hex_to_rgb(hex_color):
+        hex_color = hex_color.lstrip('#')
+        return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+    
+    primary_rgb = hex_to_rgb(primary_color)
+    secondary_rgb = hex_to_rgb(secondary_color)
+    
+    # Set QR code size based on settings
+    size_mapping = {
+        'small': {'box_size': 8, 'border': 4, 'target_size': 200},
+        'medium': {'box_size': 12, 'border': 6, 'target_size': 300},
+        'large': {'box_size': 16, 'border': 8, 'target_size': 400}
+    }
+    
+    qr_config = size_mapping.get(qr_size, size_mapping['medium'])
+    
     # Generate QR code with custom styling
     qr = qrcode.QRCode(
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_M,  # Better error correction
-        box_size=12,  # Slightly larger for better readability
-        border=6,     # More border space
+        box_size=qr_config['box_size'],
+        border=qr_config['border'],
     )
     qr.add_data(qr_data)
     qr.make(fit=True)
-    
-    # Create image with ParkPing theme colors and enhanced styling
-    # Convert hex colors to RGB tuples for PIL compatibility
-    parkping_green = (5, 150, 105)  # RGB equivalent of #059669
-    white_color = (255, 255, 255)   # RGB for white
     
     try:
         from qrcode.image.styledpil import StyledPilImage
@@ -238,89 +276,97 @@ def generate_qr_code(vehicle, request=None):
             image_factory=StyledPilImage,
             module_drawer=RoundedModuleDrawer(),
             color_mask=SolidFillColorMask(
-                back_color=white_color,
-                front_color=parkping_green
+                back_color=secondary_rgb,
+                front_color=primary_rgb
             )
         )
     except (ImportError, Exception):
         # Fallback to basic styled QR code if advanced styling isn't available
         img = qr.make_image(
-            fill_color=parkping_green,
-            back_color=white_color
+            fill_color=primary_rgb,
+            back_color=secondary_rgb
         )
     
-    # Add PARKPING branding in the center of QR code
-    try:
-        from PIL import Image, ImageDraw, ImageFont
-        import os
-        
-        # Convert to PIL Image for editing
-        img = img.convert('RGBA')
-        width, height = img.size
-        
-        # Create center branding area
-        center_x, center_y = width // 2, height // 2
-        logo_size = min(width, height) // 6  # Size of the logo area
-        
-        # Create overlay for the center logo
-        overlay = Image.new('RGBA', (width, height), (255, 255, 255, 0))
-        draw = ImageDraw.Draw(overlay)
-        
-        # Try to load a font for the text
+    # Add PARKPING branding in the center of QR code (if enabled)
+    if include_logo:
         try:
-            # Try to use a system font - make it bigger
-            font_size = logo_size // 2  # Increased from logo_size // 3
-            font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", font_size)
-        except:
+            from PIL import Image, ImageDraw, ImageFont
+            import os
+            
+            # Convert to PIL Image for editing
+            img = img.convert('RGBA')
+            width, height = img.size
+            
+            # Create center branding area
+            center_x, center_y = width // 2, height // 2
+            
+            # Set logo size based on settings
+            logo_size_mapping = {
+                'small': min(width, height) // 8,
+                'medium': min(width, height) // 6,
+                'large': min(width, height) // 4
+            }
+            logo_size = logo_size_mapping.get(logo_size, logo_size_mapping['medium'])
+            
+            # Create overlay for the center logo
+            overlay = Image.new('RGBA', (width, height), (255, 255, 255, 0))
+            draw = ImageDraw.Draw(overlay)
+            
+            # Try to load a font for the text
             try:
-                # Fallback font
-                font = ImageFont.load_default()
+                # Try to use a system font - make it bigger
+                font_size = logo_size // 2  # Increased from logo_size // 3
+                font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", font_size)
             except:
-                font = None
-        
-        # Draw PARKPING text with white background
-        text = "PARKPING"
-        if font:
-            # Get text dimensions
-            bbox = draw.textbbox((0, 0), text, font=font)
-            text_width = bbox[2] - bbox[0]
-            text_height = bbox[3] - bbox[1]
+                try:
+                    # Fallback font
+                    font = ImageFont.load_default()
+                except:
+                    font = None
             
-            # Position text in center
-            text_x = center_x - text_width // 2
-            text_y = center_y - text_height // 2
+            # Draw PARKPING text with background
+            text = "PARKPING"
+            if font:
+                # Get text dimensions
+                bbox = draw.textbbox((0, 0), text, font=font)
+                text_width = bbox[2] - bbox[0]
+                text_height = bbox[3] - bbox[1]
+                
+                # Position text in center
+                text_x = center_x - text_width // 2
+                text_y = center_y - text_height // 2
+                
+                # Draw background rectangle for text - adjust for better centering
+                padding = 6  # Increased padding for bigger text
+                vertical_padding = 3  # Extra vertical padding to center text better
+                draw.rectangle([
+                    text_x - padding, text_y - vertical_padding,
+                    text_x + text_width + padding, text_y + text_height + padding + 14
+                ], fill=secondary_rgb + (255,))  # Use secondary color as background
+                
+                # Draw text
+                draw.text((text_x, text_y), text, fill=primary_rgb, font=font)
+            else:
+                # Fallback: draw simple text without font with background
+                text_x = center_x - 40  # Adjusted for bigger text area
+                text_y = center_y - 6   # Adjusted for better vertical centering
+                
+                # Draw background rectangle - bigger for larger text with better centering
+                draw.rectangle([
+                    text_x - 6, text_y - 8,  # Extra top padding
+                    text_x + 80, text_y + 18  # Balanced bottom padding
+                ], fill=secondary_rgb + (255,))  # Use secondary color as background
+                
+                # Draw text
+                draw.text((text_x, text_y), "PARKPING", fill=primary_rgb)
             
-            # Draw white background rectangle for text - adjust for better centering
-            padding = 6  # Increased padding for bigger text
-            vertical_padding = 3  # Extra vertical padding to center text better
-            draw.rectangle([
-                text_x - padding, text_y - vertical_padding,
-                text_x + text_width + padding, text_y + text_height + padding + 14
-            ], fill=(255, 255, 255, 255))
+            # Composite the overlay onto the QR code
+            img = Image.alpha_composite(img, overlay)
+            img = img.convert('RGB')  # Convert back to RGB for saving
             
-            # Draw text
-            draw.text((text_x, text_y), text, fill=parkping_green, font=font)
-        else:
-            # Fallback: draw simple text without font with white background
-            text_x = center_x - 40  # Adjusted for bigger text area
-            text_y = center_y - 6   # Adjusted for better vertical centering
-            
-            # Draw white background rectangle - bigger for larger text with better centering
-            draw.rectangle([
-                text_x - 6, text_y - 8,  # Extra top padding
-                text_x + 80, text_y + 18  # Balanced bottom padding
-            ], fill=(255, 255, 255, 255))
-            
-            # Draw text
-            draw.text((text_x, text_y), "PARKPING", fill=parkping_green)
-        
-        # Composite the overlay onto the QR code
-        img = Image.alpha_composite(img, overlay)
-        img = img.convert('RGB')  # Convert back to RGB for saving
-        
-    except (ImportError, Exception) as e:
-        # If PIL operations fail, continue with the original QR code
-        pass
+        except (ImportError, Exception) as e:
+            # If PIL operations fail, continue with the original QR code
+            pass
     
     # Save to BytesIO
     buffer = BytesIO()
@@ -341,17 +387,36 @@ def customize_qr(request, pk):
     user_plan = request.user.current_plan
     if not user_plan or not user_plan.custom_qr_design:
         messages.error(request, 'Custom QR design is not available in your current plan.')
-        return redirect('vehicle_detail', pk=pk)
+        return redirect('parking:vehicle_detail', pk=pk)
     
     if request.method == 'POST':
         form = QRCodeCustomizationForm(request.POST)
         if form.is_valid():
-            # Apply customization and regenerate QR code
-            # This would integrate with a QR code generation service
-            messages.success(request, 'QR code customized successfully!')
-            return redirect('vehicle_detail', pk=pk)
+            # Save customization settings to vehicle
+            vehicle.qr_primary_color = form.cleaned_data['primary_color']
+            vehicle.qr_secondary_color = form.cleaned_data['secondary_color']
+            vehicle.qr_include_logo = form.cleaned_data['include_logo']
+            vehicle.qr_logo_size = form.cleaned_data['logo_size']
+            vehicle.qr_size = form.cleaned_data['qr_size']
+            vehicle.save()
+            
+            # Regenerate QR code with new settings
+            try:
+                generate_qr_code(vehicle, request)
+                messages.success(request, 'QR code customized successfully!')
+            except Exception as e:
+                messages.error(request, f'Error customizing QR code: {str(e)}')
+            
+            return redirect('parking:vehicle_detail', pk=pk)
     else:
-        form = QRCodeCustomizationForm()
+        # Initialize form with current vehicle settings
+        form = QRCodeCustomizationForm(initial={
+            'primary_color': vehicle.qr_primary_color,
+            'secondary_color': vehicle.qr_secondary_color,
+            'include_logo': vehicle.qr_include_logo,
+            'logo_size': vehicle.qr_logo_size,
+            'qr_size': vehicle.qr_size,
+        })
     
     context = {
         'form': form,
@@ -382,29 +447,40 @@ def select_plan(request, plan_id):
         if form.is_valid():
             # Assign the plan to the user
             from django.utils import timezone
+            from datetime import timedelta
+            
+            # Get billing cycle from form
+            billing_cycle = form.cleaned_data.get('billing_cycle', 'monthly')
             
             # Update user's subscription
             request.user.current_plan = plan
             request.user.subscription_start_date = timezone.now()
             request.user.is_subscription_active = True
             
-            # For paid plans, in a real application you would:
-            # 1. Process payment
-            # 2. Set subscription_end_date based on billing cycle
-            # 3. Create UserSubscription record
-            
             if plan.price > 0:
-                # For demo purposes, set end date to 1 month from now
-                from datetime import timedelta
-                request.user.subscription_end_date = timezone.now() + timedelta(days=30)
+                # Set end date based on billing cycle
+                if billing_cycle == 'yearly':
+                    # For yearly subscription
+                    request.user.subscription_end_date = timezone.now() + timedelta(days=365)
+                    success_message = f'Successfully subscribed to {plan.name} (Yearly)! You saved 20% on your subscription.'
+                else:
+                    # For monthly subscription
+                    request.user.subscription_end_date = timezone.now() + timedelta(days=30)
+                    success_message = f'Successfully subscribed to {plan.name} (Monthly)! Your plan is now active.'
             else:
                 # Free plan has no end date
                 request.user.subscription_end_date = None
+                success_message = f'Successfully activated {plan.name}! Your plan is now active.'
                 
             request.user.save()
             
-            messages.success(request, f'Successfully subscribed to {plan.name}! Your plan is now active.')
+            messages.success(request, success_message)
             return redirect('parking:subscription_plans')
+        else:
+            # Form is not valid, show errors
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'{field}: {error}')
     else:
         form = SubscriptionPlanSelectionForm()
     
