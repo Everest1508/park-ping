@@ -20,38 +20,96 @@
           <h3 class="text-base font-medium text-gray-900">Basic Information</h3>
         </div>
         <div class="p-4">
-          <form method="post">
+          <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label for="first_name" class="block text-xs font-medium text-gray-700">First Name</label>
-                <input type="text" name="first_name" id="first_name" value="{{ user.first_name|default:'' }}"
-                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm">
+                <label for="{{ form.first_name.id_for_label }}" class="block text-xs font-medium text-gray-700">First Name</label>
+                {{ form.first_name }}
+                {% if form.first_name.errors %}
+                  <p class="mt-1 text-xs text-red-600">{{ form.first_name.errors.0 }}</p>
+                {% endif %}
               </div>
               <div>
-                <label for="last_name" class="block text-xs font-medium text-gray-700">Last Name</label>
-                <input type="text" name="last_name" id="last_name" value="{{ user.last_name|default:'' }}"
-                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm">
+                <label for="{{ form.last_name.id_for_label }}" class="block text-xs font-medium text-gray-700">Last Name</label>
+                {{ form.last_name }}
+                {% if form.last_name.errors %}
+                  <p class="mt-1 text-xs text-red-600">{{ form.last_name.errors.0 }}</p>
+                {% endif %}
               </div>
               <div>
-                <label for="username" class="block text-xs font-medium text-gray-700">Username</label>
-                <input type="text" name="username" id="username" value="{{ user.username }}"
-                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm">
+                <label for="{{ form.username.id_for_label }}" class="block text-xs font-medium text-gray-700">Username</label>
+                {{ form.username }}
+                {% if form.username.errors %}
+                  <p class="mt-1 text-xs text-red-600">{{ form.username.errors.0 }}</p>
+                {% endif %}
               </div>
               <div>
-                <label for="email" class="block text-xs font-medium text-gray-700">Email</label>
-                <input type="email" name="email" id="email" value="{{ user.email }}"
-                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm">
+                <label for="{{ form.email.id_for_label }}" class="block text-xs font-medium text-gray-700">Email</label>
+                {{ form.email }}
+                {% if form.email.errors %}
+                  <p class="mt-1 text-xs text-red-600">{{ form.email.errors.0 }}</p>
+                {% endif %}
               </div>
               <div>
-                <label for="phone_number" class="block text-xs font-medium text-gray-700">Phone Number</label>
-                <input type="tel" name="phone_number" id="phone_number" value="{{ user.phone_number|default:'' }}"
-                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm">
+                <label for="{{ form.phone_number.id_for_label }}" class="block text-xs font-medium text-gray-700">Phone Number</label>
+                {{ form.phone_number }}
+                {% if form.phone_number.errors %}
+                  <p class="mt-1 text-xs text-red-600">{{ form.phone_number.errors.0 }}</p>
+                {% endif %}
               </div>
               <div>
-                <label for="date_of_birth" class="block text-xs font-medium text-gray-700">Date of Birth</label>
-                <input type="date" name="date_of_birth" id="date_of_birth" value="{{ user.date_of_birth|default:'' }}"
-                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm">
+                <label for="{{ form.date_of_birth.id_for_label }}" class="block text-xs font-medium text-gray-700">Date of Birth</label>
+                {{ form.date_of_birth }}
+                {% if form.date_of_birth.errors %}
+                  <p class="mt-1 text-xs text-red-600">{{ form.date_of_birth.errors.0 }}</p>
+                {% endif %}
+              </div>
+            </div>
+            
+            <!-- Profile Picture -->
+            <div class="mt-4">
+              <label class="block text-xs font-medium text-gray-700">Profile Picture</label>
+              <div class="mt-1 flex items-center space-x-4">
+                {% if user.profile_picture %}
+                  <div class="w-16 h-16 rounded-full overflow-hidden bg-gray-100" id="profile-preview">
+                    <img src="{{ user.profile_picture.url }}" alt="Profile Picture" class="w-full h-full object-cover">
+                  </div>
+                {% else %}
+                  <div class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center" id="profile-preview">
+                    <i data-lucide="user" class="w-8 h-8 text-green-600"></i>
+                  </div>
+                {% endif %}
+                <div class="flex-1">
+                  <!-- Hidden file input -->
+                  {{ form.profile_picture }}
+                  
+                  <!-- Custom upload button -->
+                  <div class="flex items-center space-x-3">
+                    <button type="button" onclick="document.getElementById('{{ form.profile_picture.id_for_label }}').click()" 
+                            class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+                      <i data-lucide="upload" class="w-4 h-4 mr-2"></i>
+                      Choose Photo
+                    </button>
+                    
+                    {% if user.profile_picture %}
+                      <button type="button" onclick="clearProfilePicture()" 
+                              class="inline-flex items-center px-3 py-2 border border-red-300 rounded-lg shadow-sm text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
+                        <i data-lucide="x" class="w-4 h-4 mr-1"></i>
+                        Remove
+                      </button>
+                    {% endif %}
+                  </div>
+                  
+                  <div id="file-info" class="mt-2 text-xs text-gray-500 hidden">
+                    <span id="file-name"></span>
+                  </div>
+                  
+                  {% if form.profile_picture.errors %}
+                    <p class="mt-1 text-xs text-red-600">{{ form.profile_picture.errors.0 }}</p>
+                  {% endif %}
+                  <p class="mt-1 text-xs text-gray-500">Upload a new profile picture (JPG, PNG, max 5MB)</p>
+                </div>
               </div>
             </div>
             <div class="mt-4">
@@ -102,6 +160,22 @@
 
     <!-- QR Parking Dashboard -->
     <div class="space-y-4">
+      <!-- Quick Stats -->
+      <div class="grid grid-cols-3 gap-4">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
+          <div class="text-2xl font-bold text-green-600">{{ total_vehicles|default:0 }}</div>
+          <div class="text-xs text-gray-600">Vehicle{% if total_vehicles != 1 %}s{% endif %}</div>
+        </div>
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
+          <div class="text-2xl font-bold text-blue-600">{{ active_qr_count|default:0 }}</div>
+          <div class="text-xs text-gray-600">Active QR{% if active_qr_count != 1 %}s{% endif %}</div>
+        </div>
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
+          <div class="text-2xl font-bold text-purple-600">{{ total_scans|default:0 }}</div>
+          <div class="text-xs text-gray-600">Total Scan{% if total_scans != 1 %}s{% endif %}</div>
+        </div>
+      </div>
+
       <!-- Quick Actions Dashboard -->
       <div class="relative overflow-hidden rounded-xl bg-white shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300">
         <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-500 to-blue-500"></div>
@@ -159,14 +233,28 @@
         </div>
         
         {% if user.current_plan %}
-          <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-3 mb-3">
+          <div class="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-3 mb-3">
             <div class="flex items-center justify-between">
               <div>
                 <h4 class="text-sm font-semibold text-gray-900">{{ user.current_plan.name }}</h4>
-                <p class="text-xs text-gray-600">${{ user.current_plan.price }}/month</p>
+                <p class="text-xs text-gray-600">
+                  {% if user.current_plan.price > 0 %}
+                    ₹{{ user.current_plan.price|floatformat:0 }}/month
+                  {% else %}
+                    Free Forever
+                  {% endif %}
+                </p>
               </div>
-              <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                <i data-lucide="crown" class="w-4 h-4 text-blue-600"></i>
+              <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                {% if user.current_plan.plan_type == 'free' %}
+                  <i data-lucide="gift" class="w-4 h-4 text-green-600"></i>
+                {% elif user.current_plan.plan_type == 'basic' %}
+                  <i data-lucide="star" class="w-4 h-4 text-green-600"></i>
+                {% elif user.current_plan.plan_type == 'pro' %}
+                  <i data-lucide="crown" class="w-4 h-4 text-green-600"></i>
+                {% else %}
+                  <i data-lucide="diamond" class="w-4 h-4 text-green-600"></i>
+                {% endif %}
               </div>
             </div>
           </div>
@@ -174,19 +262,35 @@
           <!-- Plan Features -->
           <div class="space-y-1">
             <div class="flex items-center text-xs text-gray-600">
-              <i data-lucide="check" class="w-3 h-3 text-green-500 mr-2"></i>
-              {{ user.current_plan.max_vehicles }} vehicles allowed
+              <i data-lucide="car" class="w-3 h-3 text-green-500 mr-2"></i>
+              {{ user.current_plan.max_vehicles }} vehicle{% if user.current_plan.max_vehicles != 1 %}s{% endif %} allowed
+            </div>
+            <div class="flex items-center text-xs text-gray-600">
+              <i data-lucide="phone" class="w-3 h-3 text-green-500 mr-2"></i>
+              {{ user.current_plan.max_phone_numbers }} phone number{% if user.current_plan.max_phone_numbers != 1 %}s{% endif %}
             </div>
             {% if user.current_plan.number_masking %}
               <div class="flex items-center text-xs text-gray-600">
-                <i data-lucide="check" class="w-3 h-3 text-green-500 mr-2"></i>
+                <i data-lucide="shield" class="w-3 h-3 text-green-500 mr-2"></i>
                 Number masking enabled
               </div>
             {% endif %}
             {% if user.current_plan.custom_qr_design %}
               <div class="flex items-center text-xs text-gray-600">
-                <i data-lucide="check" class="w-3 h-3 text-green-500 mr-2"></i>
+                <i data-lucide="palette" class="w-3 h-3 text-green-500 mr-2"></i>
                 Custom QR designs
+              </div>
+            {% endif %}
+            {% if user.current_plan.analytics_dashboard %}
+              <div class="flex items-center text-xs text-gray-600">
+                <i data-lucide="bar-chart-3" class="w-3 h-3 text-green-500 mr-2"></i>
+                Analytics dashboard
+              </div>
+            {% endif %}
+            {% if user.current_plan.priority_support %}
+              <div class="flex items-center text-xs text-gray-600">
+                <i data-lucide="headphones" class="w-3 h-3 text-green-500 mr-2"></i>
+                Priority support
               </div>
             {% endif %}
           </div>
@@ -207,26 +311,54 @@
       <div class="bg-white shadow rounded-lg p-6">
         <h3 class="text-lg font-medium text-gray-900 mb-4">Recent Activity</h3>
         <div class="space-y-3">
-          {% if vehicles %}
-            {% for vehicle in vehicles|slice:":3" %}
-              <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+          {% if recent_scans or vehicles %}
+            <!-- Recent QR Code Scans -->
+            {% for scan in recent_scans|slice:":3" %}
+              <div class="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg">
+                <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <i data-lucide="qr-code" class="w-4 h-4 text-blue-600"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-gray-900">QR Code Scanned</p>
+                  <p class="text-xs text-gray-600">{{ scan.vehicle.year }} {{ scan.vehicle.make }} {{ scan.vehicle.model }} ({{ scan.vehicle.license_plate }})</p>
+                </div>
+                <div class="text-xs text-gray-500">
+                  {{ scan.scanned_at|timesince }} ago
+                </div>
+              </div>
+            {% endfor %}
+            
+            <!-- Recent Vehicle Additions -->
+            {% for vehicle in vehicles|slice:":2" %}
+              <div class="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
                 <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
                   <i data-lucide="car" class="w-4 h-4 text-green-600"></i>
                 </div>
                 <div class="flex-1 min-w-0">
-                  <p class="text-sm font-medium text-gray-900">{{ vehicle.year }} {{ vehicle.make }} {{ vehicle.model }}</p>
-                  <p class="text-xs text-gray-600">{{ vehicle.license_plate }}</p>
+                  <p class="text-sm font-medium text-gray-900">Vehicle Added</p>
+                  <p class="text-xs text-gray-600">{{ vehicle.year }} {{ vehicle.make }} {{ vehicle.model }} ({{ vehicle.license_plate }})</p>
                 </div>
                 <div class="text-xs text-gray-500">
                   {{ vehicle.created_at|timesince }} ago
                 </div>
               </div>
             {% endfor %}
+            
+            <!-- Show more link if there are more activities -->
+            {% if vehicles.count > 2 or recent_scans.count > 3 %}
+              <div class="text-center pt-3 border-t border-gray-200">
+                <a href="{% url 'parking:vehicle_list' %}" class="text-sm text-green-600 hover:text-green-700 font-medium">
+                  View All Activity
+                </a>
+              </div>
+            {% endif %}
           {% else %}
             <div class="text-center py-6">
-              <i data-lucide="car" class="w-12 h-12 text-gray-300 mx-auto mb-3"></i>
-              <p class="text-sm text-gray-500 mb-3">No vehicles added yet</p>
+              <i data-lucide="activity" class="w-12 h-12 text-gray-300 mx-auto mb-3"></i>
+              <p class="text-sm text-gray-500 mb-3">No recent activity</p>
+              <p class="text-xs text-gray-400 mb-4">Add a vehicle to start tracking activity</p>
               <a href="{% url 'parking:add_vehicle' %}" class="inline-flex items-center px-3 py-1 bg-green-600 text-white text-xs font-medium rounded-full hover:bg-green-700">
+                <i data-lucide="plus" class="w-3 h-3 mr-1"></i>
                 Add Your First Vehicle
               </a>
             </div>
@@ -302,4 +434,69 @@
 
     </div>
   </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Handle file input change
+  document.getElementById('{{ form.profile_picture.id_for_label }}').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    const preview = document.getElementById('profile-preview');
+    const fileInfo = document.getElementById('file-info');
+    const fileName = document.getElementById('file-name');
+    
+    if (file) {
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+      if (!validTypes.includes(file.type)) {
+        alert('Please select a valid image file (JPG, PNG, GIF)');
+        e.target.value = '';
+        return;
+      }
+      
+      // Validate file size (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('File size must be less than 5MB');
+        e.target.value = '';
+        return;
+      }
+      
+      // Show file info
+      fileName.textContent = file.name;
+      fileInfo.classList.remove('hidden');
+      
+      // Preview image
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        preview.innerHTML = `<img src="${e.target.result}" alt="Profile Picture Preview" class="w-full h-full object-cover">`;
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+  
+  // Handle remove profile picture
+  function clearProfilePicture() {
+    const fileInput = document.getElementById('{{ form.profile_picture.id_for_label }}');
+    const preview = document.getElementById('profile-preview');
+    const fileInfo = document.getElementById('file-info');
+    
+    // Clear file input
+    fileInput.value = '';
+    
+    // Hide file info
+    fileInfo.classList.add('hidden');
+    
+    // Reset preview to default
+    preview.innerHTML = `
+      <div class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
+        <i data-lucide="user" class="w-8 h-8 text-green-600"></i>
+      </div>
+    `;
+    
+    // Re-initialize Lucide icons
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
+  }
+</script>
 {% endblock %}

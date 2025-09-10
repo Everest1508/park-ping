@@ -386,45 +386,93 @@
   // Function to print QR code
   function printQRCode() {
     {% if vehicle.qr_code %}
-      const printWindow = window.open('', '_blank');
-      printWindow.document.write(`
-        <html>
-          <head>
-            <title>ParkPing QR Code - {{ vehicle.license_plate }}</title>
-            <style>
-              body { 
-                font-family: Arial, sans-serif; 
-                text-align: center; 
-                padding: 20px;
-              }
-              .qr-container { 
-                margin: 20px auto; 
-                max-width: 300px;
-              }
-              .vehicle-info {
-                margin-bottom: 20px;
-              }
-            </style>
-          </head>
-          <body>
-            <h2>ParkPing Vehicle QR Code</h2>
-            <div class="vehicle-info">
-              <p>{{ vehicle.year }} {{ vehicle.make }} {{ vehicle.model }}</p>
-              <p>License Plate: {{ vehicle.license_plate }}</p>
-            </div>
-            <div class="qr-container">
-              <img src="{{ vehicle.qr_code.url }}" alt="QR Code" style="width: 100%;">
-            </div>
-            <p>Scan this code to contact the vehicle owner</p>
-          </body>
-        </html>
-      `);
-      printWindow.document.close();
-      printWindow.focus();
-      printWindow.print();
-      printWindow.close();
+      try {
+        // Try to open print window
+        const printWindow = window.open('', '_blank', 'width=800,height=600');
+        
+        if (!printWindow) {
+          // Fallback if popup is blocked
+          alert('Please allow popups for this site to enable printing. You can also right-click the QR code and select "Print image".');
+          return;
+        }
+        
+        const qrImageUrl = "{{ vehicle.qr_code.url }}";
+        
+        printWindow.document.write(`
+          <html>
+            <head>
+              <title>ParkPing QR Code - {{ vehicle.license_plate }}</title>
+              <style>
+                body { 
+                  font-family: Arial, sans-serif; 
+                  text-align: center; 
+                  padding: 20px;
+                  margin: 0;
+                }
+                .qr-container { 
+                  margin: 20px auto; 
+                  max-width: 300px;
+                }
+                .qr-container img {
+                  width: 100%;
+                  height: auto;
+                  border: 1px solid #ddd;
+                  padding: 10px;
+                  background: white;
+                }
+                .vehicle-info {
+                  margin-bottom: 20px;
+                  font-size: 16px;
+                }
+                .vehicle-info h2 {
+                  color: #059669;
+                  margin-bottom: 10px;
+                }
+                .instructions {
+                  margin-top: 20px;
+                  font-size: 12px;
+                  color: #666;
+                }
+                @media print {
+                  body { padding: 10px; }
+                  .instructions { display: none; }
+                }
+              </style>
+            </head>
+            <body>
+              <div class="vehicle-info">
+                <h2>ParkPing Vehicle QR Code</h2>
+                <p><strong>{{ vehicle.year }} {{ vehicle.make }} {{ vehicle.model }}</strong></p>
+                <p>License Plate: <strong>{{ vehicle.license_plate }}</strong></p>
+              </div>
+              <div class="qr-container">
+                <img src="${qrImageUrl}" alt="QR Code for {{ vehicle.license_plate }}" onload="window.focus(); window.print();" onerror="document.body.innerHTML='<p>Error loading QR code. Please try again.</p>';">
+              </div>
+              <div class="instructions">
+                <p>Scan this code to contact the vehicle owner</p>
+                <p>Print at 3x3 inches or larger for easy scanning</p>
+              </div>
+            </body>
+          </html>
+        `);
+        
+        printWindow.document.close();
+        
+        // Close window after printing (with delay for printing to complete)
+        setTimeout(() => {
+          try {
+            printWindow.close();
+          } catch (e) {
+            // Window might already be closed by user
+          }
+        }, 1000);
+        
+      } catch (error) {
+        console.error('Print error:', error);
+        alert('Unable to print QR code. Please try again or contact support.');
+      }
     {% else %}
-      alert('No QR code available to print.');
+      alert('No QR code available to print. Please generate a QR code first.');
     {% endif %}
   }
 </script>

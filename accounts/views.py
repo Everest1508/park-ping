@@ -26,13 +26,28 @@ class SignUpView(CreateView):
     
     def form_valid(self, form):
         response = super().form_valid(form)
+        
+        # Assign free plan to new user
+        from parking.models import SubscriptionPlan
+        from django.utils import timezone
+        
+        try:
+            free_plan = SubscriptionPlan.objects.get(plan_type='free', is_active=True)
+            user = self.object  # The created user
+            user.current_plan = free_plan
+            user.subscription_start_date = timezone.now()
+            user.is_subscription_active = True
+            user.save()
+        except SubscriptionPlan.DoesNotExist:
+            messages.warning(self.request, 'Free plan not found. Please contact support.')
+        
         # Log the user in after successful registration
         username = form.cleaned_data.get('username')
         password = form.cleaned_data.get('password1')
         user = authenticate(username=username, password=password)
         if user:
             login(self.request, user)
-            messages.success(self.request, 'Account created successfully! Welcome to ParkPing!')
+            messages.success(self.request, 'Account created successfully! Welcome to ParkPing with your Free plan!')
         return response
 
 
@@ -48,6 +63,10 @@ class CustomLoginView(LoginView):
 @login_required
 def profile_view(request):
     """View for user profile"""
+    from parking.models import Vehicle, QRCodeScan
+    from django.utils import timezone
+    from datetime import timedelta
+    
     if request.method == 'POST':
         form = CustomUserProfileForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
@@ -57,9 +76,28 @@ def profile_view(request):
     else:
         form = CustomUserProfileForm(instance=request.user)
     
+    # Get user's vehicles for recent activity
+    vehicles = Vehicle.objects.filter(user=request.user).order_by('-created_at')
+    
+    # Get recent QR code scans (last 7 days)
+    recent_scans = QRCodeScan.objects.filter(
+        vehicle__user=request.user,
+        scanned_at__gte=timezone.now() - timedelta(days=7)
+    ).order_by('-scanned_at')[:5]
+    
+    # Calculate some stats
+    total_vehicles = vehicles.count()
+    active_qr_count = vehicles.filter(is_qr_active=True).count()
+    total_scans = QRCodeScan.objects.filter(vehicle__user=request.user).count()
+    
     context = {
         'form': form,
         'user': request.user,
+        'vehicles': vehicles,
+        'recent_scans': recent_scans,
+        'total_vehicles': total_vehicles,
+        'active_qr_count': active_qr_count,
+        'total_scans': total_scans,
     }
     return render(request, 'accounts/profile.html', context)
 
@@ -69,7 +107,17 @@ def phone_numbers_view(request):
     """View for managing phone numbers"""
     phone_numbers = UserPhoneNumber.objects.filter(user=request.user)
     
+    # Check subscription limits
+    user_plan = request.user.current_plan
+    max_phone_numbers = user_plan.max_phone_numbers if user_plan else 1
+    current_count = phone_numbers.count()
+    
     if request.method == 'POST':
+        # Check if user can add more phone numbers
+        if current_count >= max_phone_numbers:
+            messages.error(request, f'You have reached the maximum number of phone numbers ({max_phone_numbers}) for your {user_plan.name if user_plan else "current"} plan. Please upgrade to add more.')
+            return redirect('accounts:phone_numbers')
+            
         form = UserPhoneNumberForm(request.POST, user=request.user)
         if form.is_valid():
             phone_number = form.save(commit=False)
@@ -83,6 +131,10 @@ def phone_numbers_view(request):
     context = {
         'form': form,
         'phone_numbers': phone_numbers,
+        'max_phone_numbers': max_phone_numbers,
+        'current_count': current_count,
+        'can_add_phone': current_count < max_phone_numbers,
+        'user_plan': user_plan,
     }
     return render(request, 'accounts/phone_numbers.html', context)
 

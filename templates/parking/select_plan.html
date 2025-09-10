@@ -1,0 +1,303 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Select {{ plan.name }} Plan - ParkPing{% endblock %}
+{% block page_title %}Confirm Your Plan{% endblock %}
+
+{% block extra_css %}
+<style>
+  .plan-highlight {
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    border: 2px solid #10b981;
+  }
+  .feature-item {
+    transition: all 0.2s ease;
+  }
+  .feature-item:hover {
+    background-color: #f9fafb;
+  }
+  .billing-option {
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+  .billing-option:hover {
+    background-color: #f9fafb;
+    border-color: #10b981;
+  }
+  .billing-option.selected {
+    background-color: #f0fdf4;
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+  <div class="max-w-4xl mx-auto">
+    <!-- Back Button -->
+    <div class="mb-6">
+      <a href="{% url 'parking:subscription_plans' %}" class="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 transition-colors">
+        <i data-lucide="arrow-left" class="w-4 h-4 mr-1"></i>
+        Back to Plans
+      </a>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <!-- Plan Details -->
+      <div class="order-2 lg:order-1">
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden plan-highlight">
+          <!-- Plan Header -->
+          <div class="p-6 bg-green-50 border-b border-green-100">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-2xl font-bold text-green-900">{{ plan.name }} Plan</h2>
+                <p class="text-green-700 mt-1">{{ plan.description }}</p>
+              </div>
+              <div class="text-right">
+                <div class="text-3xl font-bold text-green-900">₹{{ plan.price|floatformat:0 }}</div>
+                <div class="text-sm text-green-600">per {{ plan.billing_cycle }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Features List -->
+          <div class="p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">What's Included</h3>
+            <div class="space-y-3">
+              <div class="feature-item flex items-center p-3 rounded-lg">
+                <div class="flex-shrink-0 w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                  <i data-lucide="car" class="w-4 h-4 text-green-600"></i>
+                </div>
+                <div>
+                  <div class="font-medium text-gray-900">{{ plan.max_vehicles }} Vehicle{% if plan.max_vehicles != 1 %}s{% endif %}</div>
+                  <div class="text-sm text-gray-600">Add and manage up to {{ plan.max_vehicles }} vehicle{% if plan.max_vehicles != 1 %}s{% endif %}</div>
+                </div>
+              </div>
+
+              <div class="feature-item flex items-center p-3 rounded-lg">
+                <div class="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                  <i data-lucide="phone" class="w-4 h-4 text-blue-600"></i>
+                </div>
+                <div>
+                  <div class="font-medium text-gray-900">{{ plan.max_phone_numbers }} Phone Number{% if plan.max_phone_numbers != 1 %}s{% endif %}</div>
+                  <div class="text-sm text-gray-600">Multiple contact options for flexibility</div>
+                </div>
+              </div>
+
+              {% if plan.number_masking %}
+                <div class="feature-item flex items-center p-3 rounded-lg">
+                  <div class="flex-shrink-0 w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+                    <i data-lucide="shield" class="w-4 h-4 text-purple-600"></i>
+                  </div>
+                  <div>
+                    <div class="font-medium text-gray-900">Number Masking</div>
+                    <div class="text-sm text-gray-600">Keep your personal number private</div>
+                  </div>
+                </div>
+              {% endif %}
+
+              {% if plan.custom_qr_design %}
+                <div class="feature-item flex items-center p-3 rounded-lg">
+                  <div class="flex-shrink-0 w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center mr-3">
+                    <i data-lucide="palette" class="w-4 h-4 text-indigo-600"></i>
+                  </div>
+                  <div>
+                    <div class="font-medium text-gray-900">Custom QR Design</div>
+                    <div class="text-sm text-gray-600">Personalize your QR codes with colors and branding</div>
+                  </div>
+                </div>
+              {% endif %}
+
+              {% if plan.analytics_dashboard %}
+                <div class="feature-item flex items-center p-3 rounded-lg">
+                  <div class="flex-shrink-0 w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center mr-3">
+                    <i data-lucide="bar-chart-3" class="w-4 h-4 text-yellow-600"></i>
+                  </div>
+                  <div>
+                    <div class="font-medium text-gray-900">Analytics Dashboard</div>
+                    <div class="text-sm text-gray-600">Track QR code scans and usage statistics</div>
+                  </div>
+                </div>
+              {% endif %}
+
+              {% if plan.priority_support %}
+                <div class="feature-item flex items-center p-3 rounded-lg">
+                  <div class="flex-shrink-0 w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mr-3">
+                    <i data-lucide="headphones" class="w-4 h-4 text-red-600"></i>
+                  </div>
+                  <div>
+                    <div class="font-medium text-gray-900">Priority Support</div>
+                    <div class="text-sm text-gray-600">Get help faster with priority customer support</div>
+                  </div>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Subscription Form -->
+      <div class="order-1 lg:order-2">
+        <div class="bg-white rounded-2xl shadow-lg p-6">
+          <h3 class="text-xl font-semibold text-gray-900 mb-6">Complete Your Subscription</h3>
+          
+          <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- Billing Cycle Selection -->
+            {% if plan.price > 0 %}
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-3">Billing Cycle</label>
+                <div class="space-y-3">
+                  <div class="billing-option border border-gray-200 rounded-lg p-4 selected" onclick="selectBilling('monthly')">
+                    <div class="flex items-center">
+                      <input type="radio" name="billing_cycle" value="monthly" checked class="text-green-600 focus:ring-green-500">
+                      <div class="ml-3 flex-1">
+                        <div class="flex items-center justify-between">
+                          <div class="font-medium text-gray-900">Monthly</div>
+                          <div class="text-lg font-semibold text-gray-900">₹{{ plan.price|floatformat:0 }}/mo</div>
+                        </div>
+                        <div class="text-sm text-gray-600">Billed monthly, cancel anytime</div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="billing-option border border-gray-200 rounded-lg p-4" onclick="selectBilling('yearly')">
+                    <div class="flex items-center">
+                      <input type="radio" name="billing_cycle" value="yearly" class="text-green-600 focus:ring-green-500">
+                      <div class="ml-3 flex-1">
+                        <div class="flex items-center justify-between">
+                          <div class="flex items-center">
+                            <span class="font-medium text-gray-900">Yearly</span>
+                            <span class="ml-2 bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">Save 20%</span>
+                          </div>
+                          <div class="text-right">
+                            <div class="text-lg font-semibold text-gray-900" id="yearly-price">$0/mo</div>
+                            <div class="text-sm text-gray-500 line-through" id="yearly-original">$0/yr</div>
+                          </div>
+                        </div>
+                        <div class="text-sm text-gray-600">Billed annually, <span id="yearly-savings">save money</span> per year</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% endif %}
+
+            <!-- Payment Summary -->
+            <div class="bg-gray-50 rounded-lg p-4">
+              <h4 class="font-medium text-gray-900 mb-3">Order Summary</h4>
+              <div class="space-y-2">
+                <div class="flex justify-between text-sm">
+                  <span class="text-gray-600">{{ plan.name }} Plan</span>
+                  <span class="text-gray-900" id="plan-price">₹{{ plan.price|floatformat:0 }}</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                  <span class="text-gray-600">Billing</span>
+                  <span class="text-gray-900" id="billing-frequency">Monthly</span>
+                </div>
+                {% if plan.price > 0 %}
+                  <div class="border-t border-gray-200 pt-2 mt-2">
+                    <div class="flex justify-between font-medium">
+                      <span class="text-gray-900">Total</span>
+                      <span class="text-gray-900" id="total-price">₹{{ plan.price|floatformat:0 }}/mo</span>
+                    </div>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Terms and Conditions -->
+            <div class="flex items-start">
+              <input type="checkbox" id="terms" name="terms" required class="mt-1 text-green-600 focus:ring-green-500">
+              <label for="terms" class="ml-2 text-sm text-gray-600">
+                I agree to the <a href="#" class="text-green-600 hover:text-green-700">Terms of Service</a> and <a href="#" class="text-green-600 hover:text-green-700">Privacy Policy</a>
+              </label>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="w-full bg-green-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+              {% if plan.price == 0 %}
+                Start Free Plan
+              {% else %}
+                Subscribe to {{ plan.name }}
+              {% endif %}
+            </button>
+
+            <!-- Security Notice -->
+            <div class="text-center">
+              <div class="flex items-center justify-center text-sm text-gray-500">
+                <i data-lucide="shield-check" class="w-4 h-4 mr-1"></i>
+                Secure payment processing
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Money Back Guarantee -->
+        {% if plan.price > 0 %}
+          <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <i data-lucide="shield-check" class="w-5 h-5 text-blue-600"></i>
+              </div>
+              <div class="ml-3">
+                <h4 class="text-sm font-medium text-blue-900">30-Day Money Back Guarantee</h4>
+                <p class="text-sm text-blue-700">Not satisfied? Get a full refund within 30 days, no questions asked.</p>
+              </div>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Initialize pricing on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    const planPrice = {{ plan.price|floatformat:0 }};
+    
+    // Set initial yearly pricing
+    const yearlyPrice = Math.round(planPrice * 12 * 0.8);
+    const monthlyEquivalent = Math.round(yearlyPrice / 12);
+    const savings = Math.round(planPrice * 12 * 0.2);
+    
+    document.getElementById('yearly-price').textContent = `₹${monthlyEquivalent}/mo`;
+    document.getElementById('yearly-original').textContent = `₹${planPrice * 12}/yr`;
+    document.getElementById('yearly-savings').textContent = `save ₹${savings}`;
+  });
+
+  function selectBilling(cycle) {
+    // Remove selected class from all options
+    document.querySelectorAll('.billing-option').forEach(option => {
+      option.classList.remove('selected');
+    });
+    
+    // Add selected class to clicked option
+    event.currentTarget.classList.add('selected');
+    
+    // Update radio button
+    document.querySelector(`input[value="${cycle}"]`).checked = true;
+    
+    // Update pricing display
+    const planPrice = {{ plan.price|floatformat:0 }};
+    const planPriceElement = document.getElementById('plan-price');
+    const billingFrequencyElement = document.getElementById('billing-frequency');
+    const totalPriceElement = document.getElementById('total-price');
+    
+    if (cycle === 'monthly') {
+      planPriceElement.textContent = `₹${planPrice}`;
+      billingFrequencyElement.textContent = 'Monthly';
+      totalPriceElement.textContent = `₹${planPrice}/mo`;
+    } else {
+      const yearlyPrice = Math.round(planPrice * 12 * 0.8);
+      const monthlyEquivalent = Math.round(yearlyPrice / 12);
+      planPriceElement.textContent = `₹${yearlyPrice}`;
+      billingFrequencyElement.textContent = 'Yearly';
+      totalPriceElement.textContent = `₹${monthlyEquivalent}/mo (billed annually)`;
+    }
+  }
+</script>
+{% endblock %}

@@ -213,18 +213,114 @@ def generate_qr_code(vehicle, request=None):
         # In production, you should set SITE_URL in settings
         qr_data = f"http://127.0.0.1:8000{qr_url}"
     
-    # Generate QR code
+    # Generate QR code with custom styling
     qr = qrcode.QRCode(
         version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_L,
-        box_size=10,
-        border=4,
+        error_correction=qrcode.constants.ERROR_CORRECT_M,  # Better error correction
+        box_size=12,  # Slightly larger for better readability
+        border=6,     # More border space
     )
     qr.add_data(qr_data)
     qr.make(fit=True)
     
-    # Create image
-    img = qr.make_image(fill_color="black", back_color="white")
+    # Create image with ParkPing theme colors and enhanced styling
+    # Convert hex colors to RGB tuples for PIL compatibility
+    parkping_green = (5, 150, 105)  # RGB equivalent of #059669
+    white_color = (255, 255, 255)   # RGB for white
+    
+    try:
+        from qrcode.image.styledpil import StyledPilImage
+        from qrcode.image.styles.moduledrawers import RoundedModuleDrawer
+        from qrcode.image.styles.colormasks import SolidFillColorMask
+        
+        # Create styled QR code with rounded corners
+        img = qr.make_image(
+            image_factory=StyledPilImage,
+            module_drawer=RoundedModuleDrawer(),
+            color_mask=SolidFillColorMask(
+                back_color=white_color,
+                front_color=parkping_green
+            )
+        )
+    except (ImportError, Exception):
+        # Fallback to basic styled QR code if advanced styling isn't available
+        img = qr.make_image(
+            fill_color=parkping_green,
+            back_color=white_color
+        )
+    
+    # Add PARKPING branding in the center of QR code
+    try:
+        from PIL import Image, ImageDraw, ImageFont
+        import os
+        
+        # Convert to PIL Image for editing
+        img = img.convert('RGBA')
+        width, height = img.size
+        
+        # Create center branding area
+        center_x, center_y = width // 2, height // 2
+        logo_size = min(width, height) // 6  # Size of the logo area
+        
+        # Create overlay for the center logo
+        overlay = Image.new('RGBA', (width, height), (255, 255, 255, 0))
+        draw = ImageDraw.Draw(overlay)
+        
+        # Try to load a font for the text
+        try:
+            # Try to use a system font - make it bigger
+            font_size = logo_size // 2  # Increased from logo_size // 3
+            font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", font_size)
+        except:
+            try:
+                # Fallback font
+                font = ImageFont.load_default()
+            except:
+                font = None
+        
+        # Draw PARKPING text with white background
+        text = "PARKPING"
+        if font:
+            # Get text dimensions
+            bbox = draw.textbbox((0, 0), text, font=font)
+            text_width = bbox[2] - bbox[0]
+            text_height = bbox[3] - bbox[1]
+            
+            # Position text in center
+            text_x = center_x - text_width // 2
+            text_y = center_y - text_height // 2
+            
+            # Draw white background rectangle for text - adjust for better centering
+            padding = 6  # Increased padding for bigger text
+            vertical_padding = 3  # Extra vertical padding to center text better
+            draw.rectangle([
+                text_x - padding, text_y - vertical_padding,
+                text_x + text_width + padding, text_y + text_height + padding + 14
+            ], fill=(255, 255, 255, 255))
+            
+            # Draw text
+            draw.text((text_x, text_y), text, fill=parkping_green, font=font)
+        else:
+            # Fallback: draw simple text without font with white background
+            text_x = center_x - 40  # Adjusted for bigger text area
+            text_y = center_y - 6   # Adjusted for better vertical centering
+            
+            # Draw white background rectangle - bigger for larger text with better centering
+            draw.rectangle([
+                text_x - 6, text_y - 8,  # Extra top padding
+                text_x + 80, text_y + 18  # Balanced bottom padding
+            ], fill=(255, 255, 255, 255))
+            
+            # Draw text
+            draw.text((text_x, text_y), "PARKPING", fill=parkping_green)
+        
+        # Composite the overlay onto the QR code
+        img = Image.alpha_composite(img, overlay)
+        img = img.convert('RGB')  # Convert back to RGB for saving
+        
+    except (ImportError, Exception) as e:
+        # If PIL operations fail, continue with the original QR code
+        pass
     
     # Save to BytesIO
     buffer = BytesIO()
@@ -284,9 +380,30 @@ def select_plan(request, plan_id):
     if request.method == 'POST':
         form = SubscriptionPlanSelectionForm(request.POST)
         if form.is_valid():
-            # Process subscription
-            # In a real application, this would integrate with payment processing
-            messages.success(request, f'Successfully subscribed to {plan.name}!')
+            # Assign the plan to the user
+            from django.utils import timezone
+            
+            # Update user's subscription
+            request.user.current_plan = plan
+            request.user.subscription_start_date = timezone.now()
+            request.user.is_subscription_active = True
+            
+            # For paid plans, in a real application you would:
+            # 1. Process payment
+            # 2. Set subscription_end_date based on billing cycle
+            # 3. Create UserSubscription record
+            
+            if plan.price > 0:
+                # For demo purposes, set end date to 1 month from now
+                from datetime import timedelta
+                request.user.subscription_end_date = timezone.now() + timedelta(days=30)
+            else:
+                # Free plan has no end date
+                request.user.subscription_end_date = None
+                
+            request.user.save()
+            
+            messages.success(request, f'Successfully subscribed to {plan.name}! Your plan is now active.')
             return redirect('parking:subscription_plans')
     else:
         form = SubscriptionPlanSelectionForm()

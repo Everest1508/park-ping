@@ -61,9 +61,16 @@ class CustomUserProfileForm(forms.ModelForm):
     
     class Meta:
         model = CustomUser
-        fields = ['first_name', 'last_name', 'email', 'date_of_birth', 'profile_picture']
+        fields = ['first_name', 'last_name', 'username', 'email', 'phone_number', 'date_of_birth', 'profile_picture']
         widgets = {
             'date_of_birth': forms.DateInput(attrs={'type': 'date'}),
+            'first_name': forms.TextInput(attrs={'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm'}),
+            'last_name': forms.TextInput(attrs={'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm'}),
+            'username': forms.TextInput(attrs={'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm'}),
+            'email': forms.EmailInput(attrs={'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm'}),
+            'phone_number': forms.TextInput(attrs={'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm'}),
+            'date_of_birth': forms.DateInput(attrs={'type': 'date', 'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm'}),
+            'profile_picture': forms.ClearableFileInput(attrs={'class': 'hidden', 'accept': 'image/*'}),
         }
 
 
