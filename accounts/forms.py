@@ -17,19 +17,19 @@ class CustomUserCreationForm(UserCreationForm):
         max_length=17,
         required=False,
         help_text="Primary phone number for contact",
-        widget=forms.TextInput(attrs={'class': 'form-field', 'placeholder': '+1234567890'})
+        widget=forms.TextInput(attrs={'class': 'mt-1 block w-full px-4 py-2 rounded-lg text-gray-900 focus:outline-none', 'placeholder': '+1234567890'})
     )
     date_of_birth = forms.DateField(
         required=False,
-        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-field'})
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'mt-1 block w-full px-4 py-2 rounded-lg text-gray-900 focus:outline-none'})
     )
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Add CSS classes to all form fields
+        # Add CSS classes to all form fields to match login form exactly
         for field_name, field in self.fields.items():
             if field_name not in ['phone_number', 'date_of_birth']:  # Skip fields we already styled
-                field.widget.attrs.update({'class': 'form-field'})
+                field.widget.attrs.update({'class': 'mt-1 block w-full px-4 py-2 rounded-lg text-gray-900 focus:outline-none'})
             
             # Add placeholders
             if field_name == 'first_name':
@@ -49,8 +49,8 @@ class CustomUserCreationForm(UserCreationForm):
         """Add error class to field widget"""
         if field_name in self.fields:
             current_class = self.fields[field_name].widget.attrs.get('class', '')
-            if 'error' not in current_class:
-                self.fields[field_name].widget.attrs['class'] = f"{current_class} error".strip()
+            if 'border-red-500' not in current_class:
+                self.fields[field_name].widget.attrs['class'] = f"{current_class} border-red-500".strip()
     
     def clean(self):
         cleaned_data = super().clean()

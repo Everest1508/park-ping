@@ -8,33 +8,14 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
-    /* Style Django form fields to match original design */
+    /* Style Django form fields to match login form exactly */
     .form-field {
       @apply mt-1 block w-full px-4 py-2 rounded-lg text-gray-900 focus:outline-none;
-      border: 1px solid #d1d5db;
-      background-color: white;
-    }
-    
-    .form-field:focus {
-      @apply focus:outline-none;
-      border-color: #10b981;
-      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
     }
     
     /* Error styling for form fields */
     .form-field.error {
-      border-color: #ef4444;
-      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
-    }
-    
-    /* Ensure form fields have proper spacing and appearance */
-    .form-field::placeholder {
-      color: #9ca3af;
-    }
-    
-    /* Make sure the form fields look exactly like the original inputs */
-    input.form-field {
-      height: 2.5rem;
+      @apply border-red-500;
     }
   </style>
 </head>
@@ -51,44 +32,16 @@
     <form class="space-y-6" method="post">
       {% csrf_token %}
       
-      <!-- Display form errors -->
-      {% if form.errors %}
-        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4">
-          <div class="flex">
-            <div class="py-1">
-              <svg class="fill-current h-6 w-6 text-red-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                <path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z"/>
-              </svg>
-            </div>
-            <div>
-              <h3 class="font-bold">Please correct the following errors:</h3>
-              <ul class="mt-2 text-sm">
-                {% for field, errors in form.errors.items %}
-                  {% for error in errors %}
-                    <li>• {{ field|title }}: {{ error }}</li>
-                  {% endfor %}
-                {% endfor %}
-              </ul>
-            </div>
-          </div>
-        </div>
-      {% endif %}
       
       <!-- Name Fields -->
       <div class="grid grid-cols-2 gap-4">
         <div>
           <label for="{{ form.first_name.id_for_label }}" class="block text-sm font-medium">First Name</label>
           {{ form.first_name }}
-          {% if form.first_name.errors %}
-            <p class="mt-1 text-sm text-red-200">{{ form.first_name.errors.0 }}</p>
-          {% endif %}
         </div>
         <div>
           <label for="{{ form.last_name.id_for_label }}" class="block text-sm font-medium">Last Name</label>
           {{ form.last_name }}
-          {% if form.last_name.errors %}
-            <p class="mt-1 text-sm text-red-200">{{ form.last_name.errors.0 }}</p>
-          {% endif %}
         </div>
       </div>
 
@@ -96,27 +49,18 @@
       <div>
         <label for="{{ form.username.id_for_label }}" class="block text-sm font-medium">Username</label>
         {{ form.username }}
-        {% if form.username.errors %}
-          <p class="mt-1 text-sm text-red-200">{{ form.username.errors.0 }}</p>
-        {% endif %}
       </div>
 
       <!-- Email -->
       <div>
         <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium">Email</label>
         {{ form.email }}
-        {% if form.email.errors %}
-          <p class="mt-1 text-sm text-red-200">{{ form.email.errors.0 }}</p>
-        {% endif %}
       </div>
 
       <!-- Phone Number -->
       <div>
         <label for="{{ form.phone_number.id_for_label }}" class="block text-sm font-medium">Phone Number (Optional)</label>
         {{ form.phone_number }}
-        {% if form.phone_number.errors %}
-          <p class="mt-1 text-sm text-red-200">{{ form.phone_number.errors.0 }}</p>
-        {% endif %}
         <p class="mt-1 text-xs text-green-200">{{ form.phone_number.help_text }}</p>
       </div>
 
@@ -125,16 +69,10 @@
         <div>
           <label for="{{ form.password1.id_for_label }}" class="block text-sm font-medium">Password</label>
           {{ form.password1 }}
-          {% if form.password1.errors %}
-            <p class="mt-1 text-sm text-red-200">{{ form.password1.errors.0 }}</p>
-          {% endif %}
         </div>
         <div>
           <label for="{{ form.password2.id_for_label }}" class="block text-sm font-medium">Confirm Password</label>
           {{ form.password2 }}
-          {% if form.password2.errors %}
-            <p class="mt-1 text-sm text-red-200">{{ form.password2.errors.0 }}</p>
-          {% endif %}
         </div>
       </div>
 
@@ -292,20 +230,44 @@
       });
     });
 
-    // Add error styling to form fields with errors
+    // Show form errors in toast notifications
     document.addEventListener('DOMContentLoaded', function() {
-      // Add error class to fields that have errors
-      const errorFields = document.querySelectorAll('.form-field');
+      // Add error class to fields that have errors and show toast
+      const errorFields = document.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"], input[type="password"], input[type="date"]');
+      let hasErrors = false;
+      let errorMessages = [];
+      
       errorFields.forEach(field => {
         if (field.parentNode.querySelector('.text-red-200')) {
-          field.classList.add('error');
+          field.classList.add('border-red-500');
+          hasErrors = true;
+          const errorText = field.parentNode.querySelector('.text-red-200').textContent;
+          if (errorText && !errorMessages.includes(errorText)) {
+            errorMessages.push(errorText);
+          }
         }
       });
+      
+      // Show error toast if there are validation errors
+      if (hasErrors && errorMessages.length > 0) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Registration Failed',
+          html: '<div class="text-left"><p class="mb-2">Please correct the following errors:</p><ul class="list-disc list-inside space-y-1">' + 
+                errorMessages.map(msg => '<li>' + msg + '</li>').join('') + 
+                '</ul></div>',
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 8000,
+          timerProgressBar: true
+        });
+      }
       
       // Remove error class on focus
       errorFields.forEach(field => {
         field.addEventListener('focus', function() {
-          this.classList.remove('error');
+          this.classList.remove('border-red-500');
         });
       });
     });
@@ -348,6 +310,30 @@
           });
         {% endif %}
       {% endfor %}
+    {% endif %}
+
+    {% if form.errors %}
+      // Collect all form errors
+      const formErrors = [];
+      {% for field, errors in form.errors.items %}
+        {% for error in errors %}
+          formErrors.push('{{ field|title }}: {{ error|escapejs }}');
+        {% endfor %}
+      {% endfor %}
+      
+      // Show comprehensive error toast
+      Swal.fire({
+        icon: 'error',
+        title: 'Registration Failed',
+        html: '<div class="text-left"><p class="mb-2">Please correct the following errors:</p><ul class="list-disc list-inside space-y-1">' + 
+              formErrors.map(error => '<li>' + error + '</li>').join('') + 
+              '</ul></div>',
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 10000,
+        timerProgressBar: true
+      });
     {% endif %}
 
   </script>
