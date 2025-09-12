@@ -83,10 +83,13 @@
             <i data-lucide="phone" class="w-5 h-5 mr-3"></i>
             Phone Numbers
           </a>
-          <a href="{% url 'accounts:logout' %}" class="flex items-center px-3 py-2 text-sm font-medium text-white text-opacity-80 rounded-lg hover:bg-white hover:bg-opacity-10 transition-colors duration-200">
-            <i data-lucide="log-out" class="w-5 h-5 mr-3"></i>
-            Logout
-          </a>
+          <form method="post" action="{% url 'accounts:logout' %}" class="inline">
+            {% csrf_token %}
+            <button type="submit" class="flex items-center px-3 py-2 text-sm font-medium text-white text-opacity-80 rounded-lg hover:bg-white hover:bg-opacity-10 transition-colors duration-200 w-full text-left">
+              <i data-lucide="log-out" class="w-5 h-5 mr-3"></i>
+              Logout
+            </button>
+          </form>
         </div>
       </div>
     </nav>
@@ -218,5 +221,8 @@
   </script>
 
   {% block extra_js %}{% endblock %}
+  
+  <!-- Interactive Walkthrough -->
+  {% include 'includes/walkthrough.html' %}
 </body>
 </html>
