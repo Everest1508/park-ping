@@ -45,6 +45,21 @@ class CustomUserCreationForm(UserCreationForm):
             elif field_name == 'password2':
                 field.widget.attrs['placeholder'] = 'Confirm password'
     
+    def add_error_class(self, field_name):
+        """Add error class to field widget"""
+        if field_name in self.fields:
+            current_class = self.fields[field_name].widget.attrs.get('class', '')
+            if 'error' not in current_class:
+                self.fields[field_name].widget.attrs['class'] = f"{current_class} error".strip()
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        # Add error class to fields with errors
+        for field_name, errors in self.errors.items():
+            if errors:
+                self.add_error_class(field_name)
+        return cleaned_data
+    
     class Meta(UserCreationForm.Meta):
         model = CustomUser
         fields = UserCreationForm.Meta.fields + (

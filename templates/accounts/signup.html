@@ -8,18 +8,33 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
-    /* Style Django form fields */
+    /* Style Django form fields to match original design */
     .form-field {
-      @apply mt-1 block w-full px-4 py-2 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400;
+      @apply mt-1 block w-full px-4 py-2 rounded-lg text-gray-900 focus:outline-none;
+      border: 1px solid #d1d5db;
+      background-color: white;
     }
     
     .form-field:focus {
-      @apply ring-2 ring-green-400 border-green-400;
+      @apply focus:outline-none;
+      border-color: #10b981;
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
     }
     
     /* Error styling for form fields */
     .form-field.error {
-      @apply border-red-500 ring-red-500;
+      border-color: #ef4444;
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    }
+    
+    /* Ensure form fields have proper spacing and appearance */
+    .form-field::placeholder {
+      color: #9ca3af;
+    }
+    
+    /* Make sure the form fields look exactly like the original inputs */
+    input.form-field {
+      height: 2.5rem;
     }
   </style>
 </head>
@@ -273,6 +288,24 @@
           showConfirmButton: false,
           timer: 2000,
           timerProgressBar: true
+        });
+      });
+    });
+
+    // Add error styling to form fields with errors
+    document.addEventListener('DOMContentLoaded', function() {
+      // Add error class to fields that have errors
+      const errorFields = document.querySelectorAll('.form-field');
+      errorFields.forEach(field => {
+        if (field.parentNode.querySelector('.text-red-200')) {
+          field.classList.add('error');
+        }
+      });
+      
+      // Remove error class on focus
+      errorFields.forEach(field => {
+        field.addEventListener('focus', function() {
+          this.classList.remove('error');
         });
       });
     });
