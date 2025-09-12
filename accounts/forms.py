@@ -16,12 +16,34 @@ class CustomUserCreationForm(UserCreationForm):
         validators=[phone_regex],
         max_length=17,
         required=False,
-        help_text="Primary phone number for contact"
+        help_text="Primary phone number for contact",
+        widget=forms.TextInput(attrs={'class': 'form-field', 'placeholder': '+1234567890'})
     )
     date_of_birth = forms.DateField(
         required=False,
-        widget=forms.DateInput(attrs={'type': 'date'})
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-field'})
     )
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Add CSS classes to all form fields
+        for field_name, field in self.fields.items():
+            if field_name not in ['phone_number', 'date_of_birth']:  # Skip fields we already styled
+                field.widget.attrs.update({'class': 'form-field'})
+            
+            # Add placeholders
+            if field_name == 'first_name':
+                field.widget.attrs['placeholder'] = 'First name'
+            elif field_name == 'last_name':
+                field.widget.attrs['placeholder'] = 'Last name'
+            elif field_name == 'username':
+                field.widget.attrs['placeholder'] = 'Choose a username'
+            elif field_name == 'email':
+                field.widget.attrs['placeholder'] = 'Enter your email'
+            elif field_name == 'password1':
+                field.widget.attrs['placeholder'] = 'Password'
+            elif field_name == 'password2':
+                field.widget.attrs['placeholder'] = 'Confirm password'
     
     class Meta(UserCreationForm.Meta):
         model = CustomUser
