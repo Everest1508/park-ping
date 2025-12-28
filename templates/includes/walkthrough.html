@@ -3,14 +3,14 @@
   <div class="flex items-center justify-center min-h-screen p-4">
     <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
       <!-- Header -->
-      <div class="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4 text-white">
+      <div class="bg-green-500 px-6 py-4 text-white">
         <div class="flex items-center justify-between">
           <h2 class="text-xl font-bold">Interactive Guide</h2>
           <button id="close-walkthrough" class="text-white hover:text-gray-200 transition-colors">
             <i data-lucide="x" class="w-6 h-6"></i>
           </button>
         </div>
-        <p class="text-green-100 text-sm mt-1">Follow the highlighted elements to learn ParkPing!</p>
+        <p class="text-green-100 text-sm mt-1">Click highlighted elements to interact!</p>
       </div>
 
       <!-- Progress Bar -->
@@ -20,7 +20,7 @@
           <span id="step-title">Welcome to ParkPing</span>
         </div>
         <div class="w-full bg-gray-200 rounded-full h-2">
-          <div id="progress-bar" class="bg-green-600 h-2 rounded-full transition-all duration-500" style="width: 16.67%"></div>
+          <div id="progress-bar" class="bg-green-500 h-2 rounded-full transition-all duration-500" style="width: 16.67%"></div>
         </div>
       </div>
 
@@ -30,14 +30,14 @@
         <div id="step-1" class="walkthrough-step">
           <div class="text-center">
             <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <i data-lucide="car" class="w-8 h-8 text-green-600"></i>
+              <i data-lucide="car" class="w-8 h-8 text-green-500"></i>
             </div>
             <h3 class="text-xl font-bold text-gray-900 mb-3">Welcome to ParkPing!</h3>
-            <p class="text-gray-600 mb-4">Let's take a quick interactive tour of your dashboard. I'll highlight important elements as we go!</p>
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <p class="text-gray-600 mb-4">Let's take a quick interactive tour. Click highlighted elements to proceed!</p>
+            <div class="bg-green-50 border border-green-200 rounded-lg p-3">
               <div class="flex items-start">
-                <i data-lucide="lightbulb" class="w-4 h-4 text-blue-500 mt-1 mr-2"></i>
-                <p class="text-blue-700 text-sm">Look for the <strong>highlighted elements</strong> on your screen and follow the instructions!</p>
+                <i data-lucide="mouse-pointer-click" class="w-4 h-4 text-green-500 mt-1 mr-2"></i>
+                <p class="text-green-700 text-sm"><strong>Tip:</strong> Click the highlighted green elements on the page to interact and proceed!</p>
               </div>
             </div>
           </div>
@@ -46,15 +46,15 @@
         <!-- Step 2: Dashboard Stats -->
         <div id="step-2" class="walkthrough-step hidden">
           <div class="text-center">
-            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <i data-lucide="bar-chart-3" class="w-8 h-8 text-blue-600"></i>
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i data-lucide="bar-chart-3" class="w-8 h-8 text-green-500"></i>
             </div>
             <h3 class="text-xl font-bold text-gray-900 mb-3">Dashboard Statistics</h3>
-            <p class="text-gray-600 mb-4">Look at the highlighted statistics section above. This shows your key metrics at a glance!</p>
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <p class="text-gray-600 mb-4">Look at the highlighted statistics cards above. Click on any card to see more details!</p>
+            <div class="bg-green-50 border border-green-200 rounded-lg p-3">
               <div class="flex items-start">
-                <i data-lucide="info" class="w-4 h-4 text-blue-500 mt-1 mr-2"></i>
-                <p class="text-blue-700 text-sm">These stats help you track your vehicles, active sessions, and QR code scans.</p>
+                <i data-lucide="info" class="w-4 h-4 text-green-500 mt-1 mr-2"></i>
+                <p class="text-green-700 text-sm">These stats show your vehicles, active sessions, and QR code scans at a glance.</p>
               </div>
             </div>
           </div>
@@ -63,15 +63,15 @@
         <!-- Step 3: My Vehicles Navigation -->
         <div id="step-3" class="walkthrough-step hidden">
           <div class="text-center">
-            <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <i data-lucide="car" class="w-8 h-8 text-purple-600"></i>
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i data-lucide="car" class="w-8 h-8 text-green-500"></i>
             </div>
             <h3 class="text-xl font-bold text-gray-900 mb-3">Navigate to Vehicles</h3>
-            <p class="text-gray-600 mb-4">Click on the highlighted "My Vehicles" link in the sidebar to manage your vehicles!</p>
-            <div class="bg-purple-50 border border-purple-200 rounded-lg p-3">
+            <p class="text-gray-600 mb-4">Click the highlighted "My Vehicles" link in the sidebar to manage your vehicles!</p>
+            <div class="bg-green-50 border border-green-200 rounded-lg p-3">
               <div class="flex items-start">
-                <i data-lucide="mouse-pointer" class="w-4 h-4 text-purple-500 mt-1 mr-2"></i>
-                <p class="text-purple-700 text-sm">This will take you to a page where you can add, edit, and manage all your vehicles.</p>
+                <i data-lucide="mouse-pointer-click" class="w-4 h-4 text-green-500 mt-1 mr-2"></i>
+                <p class="text-green-700 text-sm">Click the highlighted link to proceed to the vehicles page!</p>
               </div>
             </div>
           </div>
@@ -81,14 +81,14 @@
         <div id="step-4" class="walkthrough-step hidden">
           <div class="text-center">
             <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <i data-lucide="plus-circle" class="w-8 h-8 text-green-600"></i>
+              <i data-lucide="plus-circle" class="w-8 h-8 text-green-500"></i>
             </div>
             <h3 class="text-xl font-bold text-gray-900 mb-3">Add Your First Vehicle</h3>
             <p class="text-gray-600 mb-4">Click the highlighted "Add Vehicle" button to create your first vehicle!</p>
             <div class="bg-green-50 border border-green-200 rounded-lg p-3">
               <div class="flex items-start">
-                <i data-lucide="info" class="w-4 h-4 text-green-500 mt-1 mr-2"></i>
-                <p class="text-green-700 text-sm">You'll need to fill in details like make, model, year, color, and license plate.</p>
+                <i data-lucide="mouse-pointer-click" class="w-4 h-4 text-green-500 mt-1 mr-2"></i>
+                <p class="text-green-700 text-sm">Click the green button to start adding your vehicle details!</p>
               </div>
             </div>
           </div>
@@ -97,15 +97,15 @@
         <!-- Step 5: Vehicle Form -->
         <div id="step-5" class="walkthrough-step hidden">
           <div class="text-center">
-            <div class="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <i data-lucide="edit-3" class="w-8 h-8 text-pink-600"></i>
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i data-lucide="edit-3" class="w-8 h-8 text-green-500"></i>
             </div>
             <h3 class="text-xl font-bold text-gray-900 mb-3">Fill Out the Form</h3>
             <p class="text-gray-600 mb-4">Complete the highlighted form fields with your vehicle information!</p>
-            <div class="bg-pink-50 border border-pink-200 rounded-lg p-3">
+            <div class="bg-green-50 border border-green-200 rounded-lg p-3">
               <div class="flex items-start">
-                <i data-lucide="checklist" class="w-4 h-4 text-pink-500 mt-1 mr-2"></i>
-                <p class="text-pink-700 text-sm">Required fields: Make, Model, Year, Color, License Plate, and Contact Phone.</p>
+                <i data-lucide="checklist" class="w-4 h-4 text-green-500 mt-1 mr-2"></i>
+                <p class="text-green-700 text-sm">Required fields: Make, Model, Year, Color, License Plate, and Contact Phone.</p>
               </div>
             </div>
           </div>
@@ -114,20 +114,19 @@
         <!-- Step 6: Success! -->
         <div id="step-6" class="walkthrough-step hidden">
           <div class="text-center">
-            <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <i data-lucide="check-circle" class="w-8 h-8 text-orange-600"></i>
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i data-lucide="check-circle" class="w-8 h-8 text-green-500"></i>
             </div>
             <h3 class="text-xl font-bold text-gray-900 mb-3">Congratulations!</h3>
-            <p class="text-gray-600 mb-4">You've successfully added your first vehicle! Now you can start using all of ParkPing's features.</p>
-            <div class="bg-orange-50 border border-orange-200 rounded-lg p-3">
+            <p class="text-gray-600 mb-4">You've completed the tour! Now you're ready to use all of ParkPing's features.</p>
+            <div class="bg-green-50 border border-green-200 rounded-lg p-3">
               <div class="flex items-start">
-                <i data-lucide="lightbulb" class="w-4 h-4 text-orange-500 mt-1 mr-2"></i>
-                <p class="text-orange-700 text-sm">Try starting a parking session or customizing your QR code next!</p>
+                <i data-lucide="lightbulb" class="w-4 h-4 text-green-500 mt-1 mr-2"></i>
+                <p class="text-green-700 text-sm">Try starting a parking session or customizing your QR code next!</p>
               </div>
             </div>
           </div>
         </div>
-
 
         <!-- Navigation Buttons -->
         <div class="flex justify-between items-center pt-6 border-t border-gray-200">
@@ -140,7 +139,7 @@
             <button id="skip-walkthrough" class="px-4 py-2 text-gray-500 hover:text-gray-700 transition-colors">
               Skip Tour
             </button>
-            <button id="next-step" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+            <button id="next-step" class="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
               Next
               <i data-lucide="chevron-right" class="w-4 h-4 ml-1 inline"></i>
             </button>
@@ -152,15 +151,25 @@
 </div>
 
 <!-- Walkthrough Trigger Button -->
-<button id="start-walkthrough" class="fixed bottom-6 right-6 bg-green-600 text-white p-4 rounded-full shadow-lg hover:bg-green-700 transition-all duration-300 z-40 group">
+<button id="start-walkthrough" class="fixed bottom-6 right-6 bg-green-500 text-white p-4 rounded-full shadow-lg hover:bg-green-600 transition-all duration-300 z-40 group">
   <i data-lucide="play" class="w-6 h-6 group-hover:scale-110 transition-transform"></i>
   <span class="sr-only">Start Walkthrough</span>
 </button>
 
 <!-- Walkthrough Highlight Overlay -->
 <div id="walkthrough-highlight" class="fixed inset-0 pointer-events-none z-30 hidden">
-  <div class="absolute inset-0 bg-black bg-opacity-50"></div>
-  <div id="highlight-spotlight" class="absolute border-4 border-yellow-400 rounded-lg shadow-2xl bg-white"></div>
+  <div class="absolute inset-0 bg-black bg-opacity-60"></div>
+  <div id="highlight-spotlight" class="absolute border-4 border-green-500 rounded-lg shadow-2xl bg-white pointer-events-auto cursor-pointer transition-all duration-300">
+    <div class="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg whitespace-nowrap">
+      <div class="flex items-center">
+        <i data-lucide="mouse-pointer-click" class="w-4 h-4 mr-2"></i>
+        <span id="highlight-tooltip" class="text-sm font-medium">Click me!</span>
+      </div>
+      <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full">
+        <div class="border-4 border-transparent border-t-green-500"></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -177,6 +186,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const progressBar = document.getElementById('progress-bar');
   const highlightOverlay = document.getElementById('walkthrough-highlight');
   const spotlight = document.getElementById('highlight-spotlight');
+  const highlightTooltip = document.getElementById('highlight-tooltip');
 
   let currentStep = 1;
   const totalSteps = 6;
@@ -191,49 +201,50 @@ document.addEventListener('DOMContentLoaded', function() {
     'Congratulations!'
   ];
 
-  // Get current page path to determine which elements to highlight
-  const currentPath = window.location.pathname;
-  
-  const stepTargets = [
-    null, // Step 1: No target
-    '.grid.grid-cols-1.md\\:grid-cols-3.gap-6', // Step 2: Dashboard stats (if on dashboard)
-    'a[href*="vehicle"]', // Step 3: My Vehicles link in sidebar
-    '.bg-green-600.text-white', // Step 4: Add Vehicle button
-    'form', // Step 5: Vehicle form
-    null // Step 6: No target
+  const stepTooltips = [
+    'Get Started!',
+    'View Statistics',
+    'Go to Vehicles',
+    'Add Vehicle',
+    'Fill Form',
+    'Complete!'
   ];
 
-  // Page-specific targeting
+  // Get current page path to determine which elements to highlight
+  const currentPath = window.location.pathname;
+  let currentHighlightedElement = null;
+  
+  // Page-specific targeting with better selectors
   function getPageSpecificTargets() {
     if (currentPath.includes('/dashboard') || currentPath === '/') {
       return [
         null, // Step 1: No target
-        '.grid.grid-cols-1.md\\:grid-cols-3.gap-6', // Step 2: Dashboard stats
-        'a[href*="vehicle"]', // Step 3: My Vehicles link
+        '.grid.grid-cols-1.md\\:grid-cols-3.gap-6, .grid.gap-6', // Step 2: Dashboard stats
+        'a[href*="vehicle"], nav a[href*="vehicle"]', // Step 3: My Vehicles link
         null, // Step 4: Not applicable on dashboard
         null, // Step 5: Not applicable on dashboard
         null // Step 6: Not applicable on dashboard
       ];
-    } else if (currentPath.includes('/vehicles/') && !currentPath.includes('/add')) {
+    } else if (currentPath.includes('/vehicles') && !currentPath.includes('/add') && !currentPath.includes('/edit')) {
       return [
         null, // Step 1: No target
         null, // Step 2: Not applicable on vehicle list
         null, // Step 3: Not applicable on vehicle list
-        '.bg-green-600.text-white', // Step 4: Add Vehicle button
+        'a[href*="add"], button[href*="add"], .bg-green-500, .bg-green-600', // Step 4: Add Vehicle button
         null, // Step 5: Not applicable on vehicle list
         null // Step 6: Not applicable on vehicle list
       ];
-    } else if (currentPath.includes('/add')) {
+    } else if (currentPath.includes('/add') || currentPath.includes('/edit')) {
       return [
         null, // Step 1: No target
         null, // Step 2: Not applicable on add form
         null, // Step 3: Not applicable on add form
         null, // Step 4: Not applicable on add form
-        'form', // Step 5: Vehicle form
+        'form, input[type="text"], input[type="number"], select', // Step 5: Vehicle form
         null // Step 6: Not applicable on add form
       ];
     }
-    return stepTargets;
+    return [null, null, null, null, null, null];
   }
 
   function updateStep() {
@@ -255,7 +266,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Update buttons
     prevButton.disabled = currentStep === 1;
-    nextButton.textContent = currentStep === totalSteps ? 'Finish' : 'Next';
     nextButton.innerHTML = currentStep === totalSteps ? 
       'Finish <i data-lucide="check" class="w-4 h-4 ml-1 inline"></i>' : 
       'Next <i data-lucide="chevron-right" class="w-4 h-4 ml-1 inline"></i>';
@@ -268,23 +278,78 @@ document.addEventListener('DOMContentLoaded', function() {
     } else {
       hideHighlight();
     }
+    
+    // Reinitialize icons
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
   }
 
   function highlightElement(selector) {
-    const element = document.querySelector(selector);
+    // Try multiple selectors if the first one doesn't work
+    const selectors = selector.split(',').map(s => s.trim());
+    let element = null;
+    
+    for (const sel of selectors) {
+      element = document.querySelector(sel);
+      if (element) break;
+    }
+    
     if (element) {
+      currentHighlightedElement = element;
       const rect = element.getBoundingClientRect();
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+      
       highlightOverlay.classList.remove('hidden');
       
-      spotlight.style.left = `${rect.left - 8}px`;
-      spotlight.style.top = `${rect.top - 8}px`;
+      // Position spotlight
+      spotlight.style.left = `${rect.left + scrollLeft - 8}px`;
+      spotlight.style.top = `${rect.top + scrollTop - 8}px`;
       spotlight.style.width = `${rect.width + 16}px`;
       spotlight.style.height = `${rect.height + 16}px`;
+      
+      // Update tooltip
+      if (highlightTooltip) {
+        highlightTooltip.textContent = stepTooltips[currentStep - 1] || 'Click me!';
+      }
+      
+      // Scroll element into view smoothly
+      element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+      
+      // Add click handler to highlighted element
+      setTimeout(() => {
+        spotlight.onclick = function(e) {
+          e.stopPropagation();
+          // If it's a link or button, trigger its click
+          if (element.tagName === 'A' || element.tagName === 'BUTTON' || element.closest('a') || element.closest('button')) {
+            const clickable = element.tagName === 'A' || element.tagName === 'BUTTON' ? element : (element.closest('a') || element.closest('button'));
+            if (clickable) {
+              clickable.click();
+              // Auto proceed after a short delay
+              setTimeout(() => {
+                if (currentStep < totalSteps) {
+                  nextStep();
+                }
+              }, 500);
+            }
+          } else {
+            // Just proceed to next step
+            nextStep();
+          }
+        };
+      }, 100);
+    } else {
+      hideHighlight();
     }
   }
 
   function hideHighlight() {
     highlightOverlay.classList.add('hidden');
+    currentHighlightedElement = null;
+    if (spotlight) {
+      spotlight.onclick = null;
+    }
   }
 
   function showWalkthrough() {
@@ -307,7 +372,8 @@ document.addEventListener('DOMContentLoaded', function() {
     } else {
       hideWalkthrough();
       // Show completion message
-      showNotification('Walkthrough completed! You\'re ready to use ParkPing like a pro!', 'success');
+      showNotification('Walkthrough completed! You\'re ready to use ParkPing!', 'success');
+      localStorage.setItem('parkping-walkthrough-completed', 'true');
     }
   }
 
@@ -335,9 +401,16 @@ document.addEventListener('DOMContentLoaded', function() {
     
     document.body.appendChild(notification);
     
+    // Reinitialize icons
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
+    
     // Auto remove after 5 seconds
     setTimeout(() => {
-      notification.remove();
+      notification.style.transition = 'opacity 0.3s';
+      notification.style.opacity = '0';
+      setTimeout(() => notification.remove(), 300);
     }, 5000);
   }
 
@@ -363,22 +436,19 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  // Auto-show walkthrough for new users (optional)
-  // Uncomment the following lines if you want to auto-show for new users
-  /*
-  if (!localStorage.getItem('parkping-walkthrough-completed')) {
-    setTimeout(() => {
-      showWalkthrough();
-    }, 2000);
-  }
-  */
-
-  // Mark walkthrough as completed when finished
-  nextButton.addEventListener('click', function() {
-    if (currentStep === totalSteps) {
-      localStorage.setItem('parkping-walkthrough-completed', 'true');
+  // Click outside modal to close
+  walkthroughModal.addEventListener('click', function(e) {
+    if (e.target === walkthroughModal) {
+      hideWalkthrough();
     }
   });
+
+  // Reinitialize icons periodically
+  setInterval(() => {
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
+  }, 1000);
 });
 </script>
 
@@ -401,15 +471,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
 /* Highlight animation */
 #highlight-spotlight {
-  animation: pulse 2s infinite;
+  animation: pulse 2s infinite, glow 2s infinite;
+  z-index: 1000;
 }
 
 @keyframes pulse {
   0%, 100% {
-    box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.7);
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
   }
   50% {
-    box-shadow: 0 0 0 10px rgba(251, 191, 36, 0);
+    box-shadow: 0 0 0 15px rgba(34, 197, 94, 0);
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    border-color: rgb(34, 197, 94);
+  }
+  50% {
+    border-color: rgb(74, 222, 128);
   }
 }
 
@@ -430,6 +510,22 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 }
 
+/* Tooltip animation */
+#highlight-spotlight > div {
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -10px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .walkthrough-modal {
@@ -441,6 +537,11 @@ document.addEventListener('DOMContentLoaded', function() {
     bottom: 1rem;
     right: 1rem;
     padding: 0.75rem;
+  }
+  
+  #highlight-spotlight > div {
+    font-size: 0.75rem;
+    padding: 0.5rem;
   }
 }
 </style>
