@@ -29,5 +29,7 @@ urlpatterns = [
     # QR Code and Public Access
     path('qr/<uuid:qr_id>/', views.scan_qr_code, name='scan_qr_code'),
     path('qr/<uuid:qr_id>/contact/', views.contact_owner_api, name='contact_owner_api'),
+    path('qr/<uuid:qr_id>/masked-number/', views.get_masked_number_api, name='get_masked_number_api'),
+    path('qr/<uuid:qr_id>/terminate-masking/', views.terminate_masking_session_api, name='terminate_masking_session_api'),
     path('search/', views.search_vehicle, name='search_vehicle'),
 ]

@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (
     SubscriptionPlan, Vehicle, QRCodeScan, 
-    ParkingSession, UserSubscription
+    ParkingSession, UserSubscription, PhoneNumberMasking
 )
 
 
@@ -25,7 +25,7 @@ class SubscriptionPlanAdmin(admin.ModelAdmin):
         ('Feature Limits', {
             'fields': (
                 'max_vehicles', 'max_phone_numbers', 'number_masking',
-                'custom_qr_design', 'priority_support', 'analytics_dashboard'
+                'max_masking_sessions', 'custom_qr_design', 'priority_support', 'analytics_dashboard'
             )
         }),
         ('Customization Options', {
@@ -61,11 +61,11 @@ class ParkingSessionInline(admin.TabularInline):
 class VehicleAdmin(admin.ModelAdmin):
     list_display = [
         'license_plate', 'user', 'vehicle_type', 'make', 'model', 'year',
-        'color', 'is_qr_active', 'show_phone', 'show_name'
+        'color', 'is_qr_active', 'show_phone', 'show_name', 'masking_enabled'
     ]
     list_filter = [
         'vehicle_type', 'is_qr_active', 'show_phone', 'show_name',
-        'show_email', 'show_vehicle_details', 'created_at'
+        'show_email', 'show_vehicle_details', 'masking_enabled', 'created_at'
     ]
     search_fields = [
         'license_plate', 'user__username', 'user__email',
@@ -87,7 +87,7 @@ class VehicleAdmin(admin.ModelAdmin):
             'fields': ('qr_code', 'qr_unique_id', 'is_qr_active')
         }),
         ('Visibility Settings', {
-            'fields': ('show_phone', 'show_name', 'show_email', 'show_vehicle_details')
+            'fields': ('show_phone', 'show_name', 'show_email', 'show_vehicle_details', 'masking_enabled')
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at'),
@@ -170,3 +170,54 @@ class UserSubscriptionAdmin(admin.ModelAdmin):
     )
     
     readonly_fields = ['created_at', 'updated_at']
+
+
+@admin.register(PhoneNumberMasking)
+class PhoneNumberMaskingAdmin(admin.ModelAdmin):
+    list_display = [
+        'vehicle', 'original_phone', 'masked_phone', 'status', 
+        'created_at', 'expires_at', 'call_count', 'last_called_at'
+    ]
+    list_filter = [
+        'status', 'created_at', 'expires_at', 'vehicle__vehicle_type',
+        'vehicle__user__current_plan'
+    ]
+    search_fields = [
+        'vehicle__license_plate', 'vehicle__user__username', 
+        'original_phone', 'masked_phone', 'session_id'
+    ]
+    ordering = ['-created_at']
+    readonly_fields = ['session_id', 'created_at', 'call_count', 'last_called_at']
+    
+    fieldsets = (
+        ('Session Information', {
+            'fields': ('vehicle', 'session_id', 'status', 'created_at', 'expires_at')
+        }),
+        ('Phone Numbers', {
+            'fields': ('original_phone', 'masked_phone')
+        }),
+        ('Usage Statistics', {
+            'fields': ('call_count', 'last_called_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def get_queryset(self, request):
+        """Optimize queryset with select_related"""
+        return super().get_queryset(request).select_related(
+            'vehicle', 'vehicle__user', 'vehicle__user__current_plan'
+        )
+    
+    def has_add_permission(self, request):
+        """Prevent manual creation of masking sessions"""
+        return False
+    
+    def has_change_permission(self, request, obj=None):
+        """Allow viewing but limit editing"""
+        return request.user.is_superuser
+    
+    def has_delete_permission(self, request, obj=None):
+        """Allow superusers to delete expired sessions"""
+        if obj and obj.status == 'expired':
+            return request.user.is_superuser
+        return False

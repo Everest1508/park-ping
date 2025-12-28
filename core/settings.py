@@ -144,3 +144,16 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # WhiteNoise settings for better performance
 WHITENOISE_USE_FINDERS = True
 WHITENOISE_AUTOREFRESH = True
+
+# ParkPing default helpline number
+PARKPING_HELPLINE_NUMBER = '+1-800-727-5746'  # Default helpline number for ParkPing (727-5746 spells PARKPING)
+
+# Emergency numbers (Indian emergency numbers)
+EMERGENCY_NUMBERS = {
+    'police': '100',  # Police emergency
+    'ambulance': '102',  # Ambulance/Medical emergency
+    'fire': '101',  # Fire department
+    'women_helpline': '1091',  # Women Helpline
+    'child_helpline': '1098',  # Child Helpline
+    'roadside_assistance': '1033',  # Roadside assistance / Traffic helpline
+}

@@ -559,9 +559,21 @@ def scan_qr_code(request, qr_id):
         # Get contact information based on visibility settings
         contact_info = vehicle.get_contact_info()
         
+        # Get emergency numbers from settings
+        from django.conf import settings
+        emergency_numbers = getattr(settings, 'EMERGENCY_NUMBERS', {
+            'police': '100',
+            'ambulance': '102',
+            'fire': '101',
+            'women_helpline': '1091',
+            'child_helpline': '1098',
+            'roadside_assistance': '1033',
+        })
+        
         context = {
             'vehicle': vehicle,
             'contact_info': contact_info,
+            'emergency_numbers': emergency_numbers,
         }
         return render(request, 'parking/scan_result.html', context)
         
@@ -630,3 +642,159 @@ def search_vehicle(request):
         'form': form,
     }
     return render(request, 'parking/search_vehicle.html', context)
+
+
+@csrf_exempt
+def get_masked_number_api(request, qr_id):
+    """API endpoint to get masked phone number for calling"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    try:
+        from .masking_service import MockMaskingService
+        from .models import PhoneNumberMasking
+        from django.utils import timezone
+        from datetime import timedelta
+        
+        # Get the vehicle
+        vehicle = Vehicle.objects.get(qr_unique_id=qr_id, is_qr_active=True)
+        
+        # Check if masking is enabled for this specific vehicle
+        if not vehicle.masking_enabled:
+            return JsonResponse({
+                'error': 'Number masking is not enabled for this vehicle',
+                'vehicle_masking_disabled': True
+            }, status=403)
+        
+        # Check if user has masking enabled in their plan
+        if not vehicle.user.current_plan or not vehicle.user.current_plan.number_masking:
+            return JsonResponse({
+                'error': 'Number masking not available for your current plan',
+                'upgrade_required': True
+            }, status=403)
+        
+        # Check plan limits for concurrent masking sessions
+        user_plan = vehicle.user.current_plan
+        active_sessions_count = PhoneNumberMasking.objects.filter(
+            vehicle__user=vehicle.user,
+            status='active',
+            expires_at__gt=timezone.now()
+        ).count()
+        
+        # Check if plan allows masking sessions
+        if user_plan.max_masking_sessions == 0:
+            return JsonResponse({
+                'error': 'Number masking is not available for your current plan. Please upgrade to a premium plan to use this feature.',
+                'upgrade_required': True,
+                'plan_name': user_plan.name if user_plan else 'Free Plan'
+            }, status=403)
+        
+        # Check if user has reached their session limit
+        if active_sessions_count >= user_plan.max_masking_sessions:
+            return JsonResponse({
+                'error': f'You have reached the maximum number of concurrent masking sessions ({user_plan.max_masking_sessions}) for your {user_plan.name}. Please wait for existing sessions to expire or upgrade your plan.',
+                'limit_reached': True,
+                'current_sessions': active_sessions_count,
+                'max_sessions': user_plan.max_masking_sessions,
+                'plan_name': user_plan.name
+            }, status=403)
+        
+        # Get the original phone number
+        if not vehicle.contact_phone:
+            return JsonResponse({'error': 'No contact phone number available'}, status=404)
+        
+        original_phone = vehicle.contact_phone.phone_number
+        
+        # Check for existing active masking session
+        active_session = PhoneNumberMasking.objects.filter(
+            vehicle=vehicle,
+            original_phone=original_phone,
+            status='active',
+            expires_at__gt=timezone.now()
+        ).first()
+        
+        if active_session:
+            # Return existing masked number
+            active_session.increment_call_count()
+            return JsonResponse({
+                'success': True,
+                'masked_number': active_session.masked_phone,
+                'original_number': original_phone,
+                'session_id': str(active_session.session_id),
+                'expires_at': active_session.expires_at.isoformat(),
+                'is_existing': True,
+                'call_count': active_session.call_count
+            })
+        
+        # Create new masking session
+        masking_data = MockMaskingService.create_masking_session(original_phone)
+        
+        # Save to database
+        masking_session = PhoneNumberMasking.objects.create(
+            vehicle=vehicle,
+            original_phone=original_phone,
+            masked_phone=masking_data['masked_number'],
+            expires_at=masking_data['expires_at'],
+            call_count=1
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'masked_number': masking_data['masked_number'],
+            'original_number': original_phone,
+            'session_id': str(masking_session.session_id),
+            'expires_at': masking_data['expires_at'].isoformat(),
+            'is_existing': False,
+            'call_count': 1
+        })
+        
+    except Vehicle.DoesNotExist:
+        return JsonResponse({'error': 'Vehicle not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@csrf_exempt
+def terminate_masking_session_api(request, qr_id):
+    """API endpoint to terminate a masking session"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    try:
+        from .models import PhoneNumberMasking
+        from django.utils import timezone
+        
+        # Get the vehicle
+        vehicle = Vehicle.objects.get(qr_unique_id=qr_id, is_qr_active=True)
+        
+        # Get session ID from request
+        data = json.loads(request.body)
+        session_id = data.get('session_id')
+        
+        if not session_id:
+            return JsonResponse({'error': 'Session ID required'}, status=400)
+        
+        # Find and terminate the session
+        masking_session = PhoneNumberMasking.objects.get(
+            vehicle=vehicle,
+            session_id=session_id,
+            status='active'
+        )
+        
+        masking_session.status = 'cancelled'
+        masking_session.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Masking session terminated successfully',
+            'session_id': str(session_id)
+        })
+        
+    except Vehicle.DoesNotExist:
+        return JsonResponse({'error': 'Vehicle not found'}, status=404)
+    except PhoneNumberMasking.DoesNotExist:
+        return JsonResponse({'error': 'Masking session not found'}, status=404)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

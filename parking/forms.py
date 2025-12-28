@@ -11,7 +11,10 @@ class VehicleForm(forms.ModelForm):
         fields = [
             'vehicle_type', 'make', 'model', 'year', 'color', 
             'license_plate', 'vin', 'contact_phone',
-            'show_phone', 'show_name', 'show_email', 'show_vehicle_details'
+            'show_phone', 'show_name', 'show_email', 'show_vehicle_details',
+            'emergency_contact_number', 'show_emergency_contact',
+            'show_helpline_number',
+            'masking_enabled'
         ]
         widgets = {
             'year': forms.NumberInput(attrs={'min': '1900', 'max': '2030'}),
@@ -19,6 +22,10 @@ class VehicleForm(forms.ModelForm):
             'vin': forms.TextInput(attrs={'placeholder': '17-character VIN (optional)'}),
             'color': forms.TextInput(attrs={'placeholder': 'e.g., Red, Blue, White'}),
             'contact_phone': forms.Select(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm'}),
+            'emergency_contact_number': forms.TextInput(attrs={'placeholder': 'e.g., +1234567890', 'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm'}),
+            'show_emergency_contact': forms.CheckboxInput(attrs={'class': 'h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded'}),
+            'show_helpline_number': forms.CheckboxInput(attrs={'class': 'h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded'}),
+            'masking_enabled': forms.CheckboxInput(attrs={'class': 'h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded'}),
         }
     
     def __init__(self, *args, **kwargs):
@@ -27,6 +34,15 @@ class VehicleForm(forms.ModelForm):
         
         # Make VIN optional
         self.fields['vin'].required = False
+        
+        # Make emergency contact optional
+        self.fields['emergency_contact_number'].required = False
+        self.fields['emergency_contact_number'].help_text = "Optional: Add an emergency contact number to display in QR code"
+        
+        # Update helpline help text to indicate it's always ParkPing helpline
+        from django.conf import settings
+        default_helpline = getattr(settings, 'PARKPING_HELPLINE_NUMBER', '+1-800-727-5746')
+        self.fields['show_helpline_number'].help_text = f"Show ParkPing helpline number ({default_helpline}) in QR code"
         
         if self.user:
             # Filter phone numbers to only show user's phone numbers
@@ -41,6 +57,15 @@ class VehicleForm(forms.ModelForm):
                 self.fields['contact_phone'].label = "Contact Phone Number (Optional)"
                 self.fields['contact_phone'].required = False
                 self.fields['contact_phone'].help_text = "Add a phone number in your profile to enable contact features"
+            
+            # Check if user's plan supports masking
+            user_plan = self.user.current_plan
+            if not user_plan or not user_plan.number_masking:
+                self.fields['masking_enabled'].widget.attrs['disabled'] = True
+                self.fields['masking_enabled'].widget.attrs['class'] += ' opacity-50 cursor-not-allowed'
+                self.fields['masking_enabled'].help_text = "Number masking requires a premium plan"
+            else:
+                self.fields['masking_enabled'].help_text = f"Enable number masking for this vehicle (Plan allows {user_plan.max_masking_sessions} concurrent sessions)"
     
     def clean_license_plate(self):
         license_plate = self.cleaned_data['license_plate']

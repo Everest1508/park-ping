@@ -25,6 +25,7 @@ class SubscriptionPlan(models.Model):
     max_vehicles = models.PositiveIntegerField(default=1)
     max_phone_numbers = models.PositiveIntegerField(default=1)
     number_masking = models.BooleanField(default=False)
+    max_masking_sessions = models.PositiveIntegerField(default=0, help_text="Maximum number of concurrent masking sessions allowed")
     custom_qr_design = models.BooleanField(default=False)
     priority_support = models.BooleanField(default=False)
     analytics_dashboard = models.BooleanField(default=False)
@@ -52,6 +53,7 @@ class SubscriptionPlan(models.Model):
             'max_vehicles': self.max_vehicles,
             'max_phone_numbers': self.max_phone_numbers,
             'number_masking': self.number_masking,
+            'max_masking_sessions': self.max_masking_sessions,
             'custom_qr_design': self.custom_qr_design,
             'priority_support': self.priority_support,
             'analytics_dashboard': self.analytics_dashboard,
@@ -106,6 +108,15 @@ class Vehicle(models.Model):
     show_email = models.BooleanField(default=False)
     show_vehicle_details = models.BooleanField(default=True)
     
+    # Emergency contact and helpline
+    emergency_contact_number = models.CharField(max_length=17, blank=True, help_text="Emergency contact number to display in QR code")
+    show_emergency_contact = models.BooleanField(default=False, help_text="Show emergency contact number in QR code")
+    helpline_number = models.CharField(max_length=17, blank=True, help_text="Helpline number to display in QR code")
+    show_helpline_number = models.BooleanField(default=False, help_text="Show helpline number in QR code")
+    
+    # Number masking settings
+    masking_enabled = models.BooleanField(default=False, help_text="Enable number masking for this vehicle's QR code")
+    
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -120,7 +131,13 @@ class Vehicle(models.Model):
         """Return contact information based on visibility settings"""
         info = {}
         if self.show_phone and self.contact_phone:
-            info['phone'] = self.contact_phone.phone_number
+            # If masking is enabled, don't show the actual phone number
+            if self.masking_enabled:
+                info['phone'] = None  # Will be handled by masking API
+                info['masking_enabled'] = True
+            else:
+                info['phone'] = self.contact_phone.phone_number
+                info['masking_enabled'] = False
         if self.show_name:
             info['name'] = self.user.get_full_name() or self.user.username
         if self.show_email:
@@ -133,6 +150,16 @@ class Vehicle(models.Model):
                 'color': self.color,
                 'license_plate': self.license_plate
             }
+        # Emergency contact number
+        if self.show_emergency_contact and self.emergency_contact_number:
+            info['emergency_contact'] = self.emergency_contact_number
+        # Helpline number - always use default ParkPing helpline
+        if self.show_helpline_number:
+            from django.conf import settings
+            default_helpline = getattr(settings, 'PARKPING_HELPLINE_NUMBER', '+1-800-727-5746')
+            if default_helpline:
+                info['helpline'] = default_helpline
+                info['helpline_is_default'] = True
         return info
 
 
@@ -187,6 +214,57 @@ class ParkingSession(models.Model):
         if self.end_time:
             return self.end_time - self.start_time
         return None
+
+
+class PhoneNumberMasking(models.Model):
+    """Model to track phone number masking sessions"""
+    
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('expired', 'Expired'),
+        ('cancelled', 'Cancelled'),
+    ]
+    
+    # Core fields
+    vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, related_name='masking_sessions')
+    original_phone = models.CharField(max_length=17, help_text="Original phone number being masked")
+    masked_phone = models.CharField(max_length=17, help_text="Generated masked phone number")
+    
+    # Session management
+    session_id = models.UUIDField(default=uuid.uuid4, unique=True, help_text="Unique session identifier")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
+    
+    # Timing
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField(help_text="When this masking session expires")
+    
+    # Tracking
+    call_count = models.PositiveIntegerField(default=0, help_text="Number of calls made to this masked number")
+    last_called_at = models.DateTimeField(null=True, blank=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['vehicle', 'status']),
+            models.Index(fields=['masked_phone']),
+            models.Index(fields=['expires_at']),
+        ]
+    
+    def __str__(self):
+        return f"{self.vehicle.license_plate} - {self.masked_phone} ({self.status})"
+    
+    def is_active(self):
+        """Check if masking session is currently active"""
+        from django.utils import timezone
+        now = timezone.now()
+        return self.status == 'active' and now <= self.expires_at
+    
+    def increment_call_count(self):
+        """Increment call count and update last called timestamp"""
+        from django.utils import timezone
+        self.call_count += 1
+        self.last_called_at = timezone.now()
+        self.save(update_fields=['call_count', 'last_called_at'])
 
 
 class UserSubscription(models.Model):

@@ -111,29 +111,86 @@
               {% endif %}
             </div>
 
-            <!-- QR Code Visibility Settings -->
-            <div class="mb-6">
-              <h4 class="text-sm font-semibold text-gray-900 mb-3">QR Code Visibility Settings</h4>
+            <!-- Emergency Contact and Helpline -->
+            <div class="mb-6 border-t border-gray-200 pt-6">
+              <h4 class="text-sm font-semibold text-gray-900 mb-4">Emergency Contact & Helpline</h4>
+              <p class="text-xs text-gray-600 mb-4">Add emergency contact number and enable ParkPing helpline to be displayed in your QR code:</p>
+              
+              <div class="space-y-4">
+                <div>
+                  <label for="{{ form.emergency_contact_number.id_for_label }}" class="block text-xs font-medium text-gray-700 mb-2">{{ form.emergency_contact_number.label }}</label>
+                  {{ form.emergency_contact_number }}
+                  {% if form.emergency_contact_number.help_text %}
+                    <p class="mt-1 text-xs text-gray-500">{{ form.emergency_contact_number.help_text }}</p>
+                  {% endif %}
+                  {% if form.emergency_contact_number.errors %}
+                    <p class="mt-1 text-xs text-red-600">{{ form.emergency_contact_number.errors.0 }}</p>
+                  {% endif %}
+                </div>
+                
+                <div class="flex items-center">
+                  {{ form.show_emergency_contact }}
+                  <label for="{{ form.show_emergency_contact.id_for_label }}" class="ml-2 block text-sm text-gray-700">
+                    Show emergency contact in QR code
+                    <span class="text-xs text-gray-500 block">Display emergency contact number when QR code is scanned</span>
+                  </label>
+                </div>
+                
+                <div class="flex items-center">
+                  {{ form.show_helpline_number }}
+                  <label for="{{ form.show_helpline_number.id_for_label }}" class="ml-2 block text-sm text-gray-700">
+                    Show ParkPing helpline in QR code
+                    <span class="text-xs text-gray-500 block">{{ form.show_helpline_number.help_text }}</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Privacy Settings -->
+            <div class="border-t border-gray-200 pt-6">
+              <h4 class="text-sm font-semibold text-gray-900 mb-4">Privacy Settings</h4>
+              <p class="text-xs text-gray-600 mb-4">Choose what information to show when someone scans your QR code:</p>
+              
               <div class="space-y-3">
                 <div class="flex items-center">
-                  <input type="checkbox" name="show_phone" id="show_phone" checked
-                    class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
-                  <label for="show_phone" class="ml-2 text-xs text-gray-700">Show phone number in QR code</label>
+                  {{ form.show_phone }}
+                  <label for="{{ form.show_phone.id_for_label }}" class="ml-2 block text-sm text-gray-700">
+                    Show phone number
+                    <span class="text-xs text-gray-500 block">Allow people to see and call your contact number</span>
+                  </label>
                 </div>
+                
                 <div class="flex items-center">
-                  <input type="checkbox" name="show_name" id="show_name" checked
-                    class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
-                  <label for="show_name" class="ml-2 text-xs text-gray-700">Show your name in QR code</label>
+                  {{ form.show_name }}
+                  <label for="{{ form.show_name.id_for_label }}" class="ml-2 block text-sm text-gray-700">
+                    Show your name
+                    <span class="text-xs text-gray-500 block">Display your full name to people who scan the QR code</span>
+                  </label>
                 </div>
+                
                 <div class="flex items-center">
-                  <input type="checkbox" name="show_email" id="show_email"
-                    class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
-                  <label for="show_email" class="ml-2 text-xs text-gray-700">Show email address in QR code</label>
+                  {{ form.show_email }}
+                  <label for="{{ form.show_email.id_for_label }}" class="ml-2 block text-sm text-gray-700">
+                    Show email address
+                    <span class="text-xs text-gray-500 block">Allow people to contact you via email</span>
+                  </label>
                 </div>
+                
                 <div class="flex items-center">
-                  <input type="checkbox" name="show_vehicle_details" id="show_vehicle_details" checked
-                    class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
-                  <label for="show_vehicle_details" class="ml-2 text-xs text-gray-700">Show vehicle details in QR code</label>
+                  {{ form.show_vehicle_details }}
+                  <label for="{{ form.show_vehicle_details.id_for_label }}" class="ml-2 block text-sm text-gray-700">
+                    Show vehicle details
+                    <span class="text-xs text-gray-500 block">Display make, model, year, and license plate</span>
+                  </label>
+                </div>
+                
+                <!-- Number Masking Setting -->
+                <div class="flex items-center">
+                  {{ form.masking_enabled }}
+                  <label for="{{ form.masking_enabled.id_for_label }}" class="ml-2 block text-sm text-gray-700">
+                    Enable number masking
+                    <span class="text-xs text-gray-500 block">{{ form.masking_enabled.help_text }}</span>
+                  </label>
                 </div>
               </div>
             </div>
