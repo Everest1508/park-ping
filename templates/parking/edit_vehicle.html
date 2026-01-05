@@ -111,17 +111,74 @@
               {% endif %}
             </div>
 
-            <!-- Contact Phone Number -->
+            <!-- Contact Information -->
             <div class="mb-6">
-              <label for="{{ form.contact_phone.id_for_label }}" class="block text-xs font-medium text-gray-700 mb-2">{{ form.contact_phone.label }} *</label>
-              {{ form.contact_phone }}
-              {% if form.contact_phone.errors %}
-                <p class="mt-1 text-xs text-red-600">{{ form.contact_phone.errors.0 }}</p>
-              {% endif %}
-              <p class="mt-1 text-xs text-gray-500">
-                This phone number will be shown to people who scan your QR code.
-                <a href="{% url 'accounts:phone_numbers' %}" class="text-green-600 hover:text-green-800">Manage phone numbers</a>
-              </p>
+              <div class="flex items-center justify-between mb-4">
+                <label class="block text-xs font-medium text-gray-700">Contact Numbers</label>
+                <button type="button" id="add-contact" class="inline-flex items-center px-3 py-1.5 bg-green-500 text-white text-xs font-medium rounded-lg hover:bg-green-600 transition-colors">
+                  <i data-lucide="plus" class="w-3 h-3 mr-1"></i>
+                  Add Contact
+                </button>
+              </div>
+              
+              <div id="contacts-container" class="space-y-3">
+                {% if vehicle.contacts.exists %}
+                  {% for contact in vehicle.contacts.all %}
+                    <div class="contact-item flex gap-3 items-start p-3 bg-gray-50 rounded-lg border border-gray-200">
+                      <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label class="block text-xs font-medium text-gray-700 mb-1">Phone Number *</label>
+                          <input type="tel" name="contact_phone_{{ forloop.counter0 }}" value="{{ contact.phone_number }}" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm"
+                            placeholder="e.g., +1234567890">
+                        </div>
+                        <div>
+                          <label class="block text-xs font-medium text-gray-700 mb-1">Relation *</label>
+                          <select name="contact_relation_{{ forloop.counter0 }}" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm">
+                            <option value="family" {% if contact.relation == 'family' %}selected{% endif %}>Family Member</option>
+                            <option value="friend" {% if contact.relation == 'friend' %}selected{% endif %}>Friend</option>
+                            <option value="colleague" {% if contact.relation == 'colleague' %}selected{% endif %}>Colleague</option>
+                            <option value="emergency" {% if contact.relation == 'emergency' %}selected{% endif %}>Emergency Contact</option>
+                            <option value="other" {% if contact.relation == 'other' %}selected{% endif %}>Other</option>
+                          </select>
+                        </div>
+                      </div>
+                      <button type="button" class="remove-contact mt-6 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors {% if vehicle.contacts.count == 1 %}hidden{% endif %}">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                      </button>
+                    </div>
+                  {% endfor %}
+                {% else %}
+                  <!-- Default contact field -->
+                  <div class="contact-item flex gap-3 items-start p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Phone Number *</label>
+                        <input type="tel" name="contact_phone_0" required
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm"
+                          placeholder="e.g., +1234567890">
+                      </div>
+                      <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Relation *</label>
+                        <select name="contact_relation_0" required
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm">
+                          <option value="family">Family Member</option>
+                          <option value="friend">Friend</option>
+                          <option value="colleague">Colleague</option>
+                          <option value="emergency">Emergency Contact</option>
+                          <option value="other">Other</option>
+                        </select>
+                      </div>
+                    </div>
+                    <button type="button" class="remove-contact mt-6 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors hidden">
+                      <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                  </div>
+                {% endif %}
+              </div>
+              
+              <p class="mt-2 text-xs text-gray-500">Add multiple contact numbers with their relations (Owner, Family, Friend, etc.)</p>
             </div>
 
             <!-- Emergency Contact and Helpline -->
@@ -284,10 +341,76 @@
       });
     }
     
+    // Dynamic contact fields
+    let contactCount = {{ vehicle.contacts.all|length|default:1 }};
+    const contactsContainer = document.getElementById('contacts-container');
+    const addContactBtn = document.getElementById('add-contact');
+    
+    if (addContactBtn && contactsContainer) {
+      // Add new contact field
+      addContactBtn.addEventListener('click', function() {
+        const newContact = document.createElement('div');
+        newContact.className = 'contact-item flex gap-3 items-start p-3 bg-gray-50 rounded-lg border border-gray-200';
+        newContact.innerHTML = `
+          <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-medium text-gray-700 mb-1">Phone Number *</label>
+              <input type="tel" name="contact_phone_${contactCount}" required
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm"
+                placeholder="e.g., +1234567890">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-700 mb-1">Relation *</label>
+              <select name="contact_relation_${contactCount}" required
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm">
+                <option value="family">Family Member</option>
+                <option value="friend">Friend</option>
+                <option value="colleague">Colleague</option>
+                <option value="emergency">Emergency Contact</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+          <button type="button" class="remove-contact mt-6 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+          </button>
+        `;
+        contactsContainer.appendChild(newContact);
+        contactCount++;
+        lucide.createIcons();
+        updateRemoveButtons();
+      });
+      
+      // Remove contact field
+      contactsContainer.addEventListener('click', function(e) {
+        if (e.target.closest('.remove-contact')) {
+          const contactItem = e.target.closest('.contact-item');
+          if (contactsContainer.children.length > 1) {
+            contactItem.remove();
+            updateRemoveButtons();
+          }
+        }
+      });
+      
+      function updateRemoveButtons() {
+        const contactItems = contactsContainer.querySelectorAll('.contact-item');
+        contactItems.forEach((item) => {
+          const removeBtn = item.querySelector('.remove-contact');
+          if (contactItems.length > 1) {
+            removeBtn.classList.remove('hidden');
+          } else {
+            removeBtn.classList.add('hidden');
+          }
+        });
+      }
+      
+      updateRemoveButtons();
+    }
+    
     // Add proper styling to form fields
     const formFields = document.querySelectorAll('input, select, textarea');
     formFields.forEach(field => {
-      if (!field.classList.contains('hidden')) {
+      if (!field.classList.contains('hidden') && !field.closest('.contact-item')) {
         field.classList.add('w-full', 'px-3', 'py-2', 'border', 'border-gray-300', 'rounded-lg', 'shadow-sm', 'focus:outline-none', 'focus:ring-green-500', 'focus:border-green-500', 'text-sm');
       }
     });

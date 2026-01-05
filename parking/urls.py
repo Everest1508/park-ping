@@ -32,4 +32,7 @@ urlpatterns = [
     path('qr/<uuid:qr_id>/masked-number/', views.get_masked_number_api, name='get_masked_number_api'),
     path('qr/<uuid:qr_id>/terminate-masking/', views.terminate_masking_session_api, name='terminate_masking_session_api'),
     path('search/', views.search_vehicle, name='search_vehicle'),
+    
+    # Chatbot
+    path('chatbot/', views.chatbot_api, name='chatbot_api'),
 ]

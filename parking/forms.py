@@ -1,5 +1,5 @@
 from django import forms
-from .models import Vehicle, SubscriptionPlan, ParkingSession
+from .models import Vehicle, SubscriptionPlan, ParkingSession, VehicleContact
 from accounts.models import UserPhoneNumber
 
 
@@ -10,7 +10,7 @@ class VehicleForm(forms.ModelForm):
         model = Vehicle
         fields = [
             'vehicle_type', 'make', 'model', 'year', 'color', 
-            'license_plate', 'vin', 'contact_phone',
+            'license_plate', 'vin',
             'show_phone', 'show_name', 'show_email', 'show_vehicle_details',
             'emergency_contact_number', 'show_emergency_contact',
             'show_helpline_number',
@@ -21,7 +21,6 @@ class VehicleForm(forms.ModelForm):
             'license_plate': forms.TextInput(attrs={'placeholder': 'ABC123'}),
             'vin': forms.TextInput(attrs={'placeholder': '17-character VIN (optional)'}),
             'color': forms.TextInput(attrs={'placeholder': 'e.g., Red, Blue, White'}),
-            'contact_phone': forms.Select(attrs={'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm'}),
             'emergency_contact_number': forms.TextInput(attrs={'placeholder': 'e.g., +1234567890', 'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm'}),
             'show_emergency_contact': forms.CheckboxInput(attrs={'class': 'h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded'}),
             'show_helpline_number': forms.CheckboxInput(attrs={'class': 'h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded'}),
@@ -45,19 +44,6 @@ class VehicleForm(forms.ModelForm):
         self.fields['show_helpline_number'].help_text = f"Show ParkPing helpline number ({default_helpline}) in QR code"
         
         if self.user:
-            # Filter phone numbers to only show user's phone numbers
-            phone_numbers = UserPhoneNumber.objects.filter(user=self.user)
-            self.fields['contact_phone'].queryset = phone_numbers
-            
-            if phone_numbers.exists():
-                self.fields['contact_phone'].empty_label = "Select a phone number"
-                self.fields['contact_phone'].label = "Contact Phone Number"
-            else:
-                self.fields['contact_phone'].empty_label = "No phone numbers available - Add one first"
-                self.fields['contact_phone'].label = "Contact Phone Number (Optional)"
-                self.fields['contact_phone'].required = False
-                self.fields['contact_phone'].help_text = "Add a phone number in your profile to enable contact features"
-            
             # Check if user's plan supports masking
             user_plan = self.user.current_plan
             if not user_plan or not user_plan.number_masking:

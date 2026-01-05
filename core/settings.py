@@ -157,3 +157,6 @@ EMERGENCY_NUMBERS = {
     'child_helpline': '1098',  # Child Helpline
     'roadside_assistance': '1033',  # Roadside assistance / Traffic helpline
 }
+
+# Groq API Configuration
+GROQ_API_KEY = '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'

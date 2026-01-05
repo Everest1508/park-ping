@@ -12,13 +12,14 @@ import json
 
 from .models import (
     Vehicle, SubscriptionPlan, ParkingSession, 
-    QRCodeScan, UserSubscription
+    QRCodeScan, UserSubscription, VehicleContact
 )
 from .forms import (
     VehicleForm, ParkingSessionForm, QRCodeCustomizationForm,
     SubscriptionPlanSelectionForm, VehicleSearchForm, ContactOwnerForm
 )
 from accounts.models import CustomUser, UserPhoneNumber
+from django.conf import settings
 
 
 @login_required
@@ -86,6 +87,47 @@ def add_vehicle(request):
             vehicle.user = request.user
             vehicle.save()
             
+            # Save multiple contacts
+            contact_count = 0
+            while True:
+                phone_key = f'contact_phone_{contact_count}'
+                relation_key = f'contact_relation_{contact_count}'
+                
+                if phone_key in request.POST and relation_key in request.POST:
+                    phone_number = request.POST.get(phone_key, '').strip()
+                    relation = request.POST.get(relation_key, 'owner').strip()
+                    
+                    if phone_number:
+                        # Check if this is the first contact (make it primary)
+                        is_primary = contact_count == 0
+                        
+                        # Default to 'family' if relation is 'owner' (for backward compatibility)
+                        if relation == 'owner':
+                            relation = 'family'
+                        
+                        VehicleContact.objects.create(
+                            vehicle=vehicle,
+                            phone_number=phone_number,
+                            relation=relation,
+                            is_primary=is_primary,
+                            show_in_qr=True
+                        )
+                    contact_count += 1
+                else:
+                    break
+            
+            # Set the first contact as the primary contact_phone if exists
+            first_contact = VehicleContact.objects.filter(vehicle=vehicle, is_primary=True).first()
+            if first_contact:
+                # Try to find matching UserPhoneNumber
+                user_phone = UserPhoneNumber.objects.filter(
+                    user=request.user,
+                    phone_number=first_contact.phone_number
+                ).first()
+                if user_phone:
+                    vehicle.contact_phone = user_phone
+                    vehicle.save()
+            
             # Generate QR code
             generate_qr_code(vehicle, request)
             
@@ -127,6 +169,51 @@ def edit_vehicle(request, pk):
         form = VehicleForm(request.POST, instance=vehicle, user=request.user)
         if form.is_valid():
             form.save()
+            
+            # Delete existing contacts and save new ones
+            VehicleContact.objects.filter(vehicle=vehicle).delete()
+            
+            # Save multiple contacts
+            contact_count = 0
+            while True:
+                phone_key = f'contact_phone_{contact_count}'
+                relation_key = f'contact_relation_{contact_count}'
+                
+                if phone_key in request.POST and relation_key in request.POST:
+                    phone_number = request.POST.get(phone_key, '').strip()
+                    relation = request.POST.get(relation_key, 'owner').strip()
+                    
+                    if phone_number:
+                        # Check if this is the first contact (make it primary)
+                        is_primary = contact_count == 0
+                        
+                        # Default to 'family' if relation is 'owner' (for backward compatibility)
+                        if relation == 'owner':
+                            relation = 'family'
+                        
+                        VehicleContact.objects.create(
+                            vehicle=vehicle,
+                            phone_number=phone_number,
+                            relation=relation,
+                            is_primary=is_primary,
+                            show_in_qr=True
+                        )
+                    contact_count += 1
+                else:
+                    break
+            
+            # Set the first contact as the primary contact_phone if exists
+            first_contact = VehicleContact.objects.filter(vehicle=vehicle, is_primary=True).first()
+            if first_contact:
+                # Try to find matching UserPhoneNumber
+                user_phone = UserPhoneNumber.objects.filter(
+                    user=request.user,
+                    phone_number=first_contact.phone_number
+                ).first()
+                if user_phone:
+                    vehicle.contact_phone = user_phone
+                    vehicle.save()
+            
             messages.success(request, 'Vehicle updated successfully!')
             return redirect('parking:vehicle_list')
         else:
@@ -137,6 +224,9 @@ def edit_vehicle(request, pk):
             messages.error(request, 'Please correct the errors below and try again.')
     else:
         form = VehicleForm(instance=vehicle, user=request.user)
+    
+    # Get existing contacts for the vehicle
+    existing_contacts = VehicleContact.objects.filter(vehicle=vehicle).order_by('-is_primary', 'created_at')
     
     context = {
         'form': form,
@@ -794,6 +884,95 @@ def terminate_masking_session_api(request, qr_id):
         return JsonResponse({'error': 'Vehicle not found'}, status=404)
     except PhoneNumberMasking.DoesNotExist:
         return JsonResponse({'error': 'Masking session not found'}, status=404)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@csrf_exempt
+def chatbot_api(request):
+    """API endpoint for chatbot using Groq"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    try:
+        from groq import Groq
+        
+        data = json.loads(request.body)
+        user_message = data.get('message', '').strip()
+        
+        if not user_message:
+            return JsonResponse({'error': 'Message is required'}, status=400)
+        
+        # Initialize Groq client
+        groq_api_key = getattr(settings, 'GROQ_API_KEY', None)
+        if not groq_api_key:
+            return JsonResponse({'error': 'Groq API key not configured'}, status=500)
+        
+        client = Groq(api_key=groq_api_key)
+        
+        # Platform context for the chatbot
+        platform_context = """
+You are a helpful assistant for ParkPing, a vehicle contact management platform. Here's what you need to know:
+
+PARKPING PLATFORM CONTEXT:
+- ParkPing helps vehicle owners create QR codes for their vehicles
+- Users can add multiple vehicles and generate QR codes for each
+- When someone scans the QR code, they can see contact information and emergency numbers
+- Users can add multiple contact numbers with relations (Family Member, Friend, Colleague, Emergency Contact, Other)
+- The platform supports number masking for privacy
+- Users can customize QR code appearance (colors, size, logo)
+- Emergency numbers available: Police (100), Ambulance (102), Fire (101), Women Helpline (1091), Child Helpline (1098), Traffic/Roadside (1033)
+- ParkPing helpline: +1-800-727-5746
+- Users can track parking sessions and QR code scans
+- Subscription plans available: Free, Basic, Professional, Enterprise
+
+FEATURES:
+1. Vehicle Management: Add, edit, delete vehicles with details (make, model, year, color, license plate)
+2. QR Code Generation: Automatic QR code generation for each vehicle
+3. Contact Management: Multiple contacts per vehicle with relations
+4. Privacy Settings: Control what information shows in QR codes
+5. Number Masking: Premium feature to mask phone numbers
+6. Parking Sessions: Track where and when you park
+7. Emergency Services: Quick access to emergency numbers in QR scans
+
+HELPFUL INFORMATION:
+- To add a vehicle: Go to "My Vehicles" and click "Add Vehicle"
+- To customize QR code: Go to vehicle details and click "Customize QR"
+- To add contacts: When adding/editing a vehicle, use the "Add Contact" button
+- Emergency numbers are automatically shown in scanned QR codes
+- Users can enable/disable showing phone, name, email, and vehicle details
+
+Be friendly, helpful, and provide accurate information about ParkPing features. If asked about something not in this context, politely say you're focused on helping with ParkPing.
+"""
+        
+        # Create chat completion
+        chat_completion = client.chat.completions.create(
+            messages=[
+                {
+                    "role": "system",
+                    "content": platform_context
+                },
+                {
+                    "role": "user",
+                    "content": user_message
+                }
+            ],
+            model="llama-3.3-70b-versatile",
+            temperature=0.7,
+            max_tokens=1024,
+        )
+        
+        bot_response = chat_completion.choices[0].message.content
+        
+        return JsonResponse({
+            'success': True,
+            'response': bot_response
+        })
+        
+    except ImportError:
+        return JsonResponse({'error': 'Groq library not installed. Please install: pip install groq'}, status=500)
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON'}, status=400)
     except Exception as e:

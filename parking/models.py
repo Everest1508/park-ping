@@ -163,6 +163,34 @@ class Vehicle(models.Model):
         return info
 
 
+class VehicleContact(models.Model):
+    """Model for vehicle contact numbers with relations"""
+    
+    RELATION_CHOICES = [
+        ('family', 'Family Member'),
+        ('friend', 'Friend'),
+        ('colleague', 'Colleague'),
+        ('emergency', 'Emergency Contact'),
+        ('other', 'Other'),
+    ]
+    
+    vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, related_name='contacts')
+    phone_number = models.CharField(max_length=17, help_text="Contact phone number")
+    relation = models.CharField(max_length=20, choices=RELATION_CHOICES, default='family', help_text="Relationship to vehicle owner")
+    is_primary = models.BooleanField(default=False, help_text="Primary contact number")
+    show_in_qr = models.BooleanField(default=True, help_text="Show this contact in QR code")
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-is_primary', 'relation', 'created_at']
+        unique_together = [['vehicle', 'phone_number']]
+    
+    def __str__(self):
+        return f"{self.vehicle.license_plate} - {self.phone_number} ({self.get_relation_display()})"
+
+
 class QRCodeScan(models.Model):
     """Model to track QR code scans"""
     
