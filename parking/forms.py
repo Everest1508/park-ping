@@ -44,14 +44,12 @@ class VehicleForm(forms.ModelForm):
         self.fields['show_helpline_number'].help_text = f"Show ParkPing helpline number ({default_helpline}) in QR code"
         
         if self.user:
-            # Check if user's plan supports masking
+            # Masking is available for all plans
             user_plan = self.user.current_plan
-            if not user_plan or not user_plan.number_masking:
-                self.fields['masking_enabled'].widget.attrs['disabled'] = True
-                self.fields['masking_enabled'].widget.attrs['class'] += ' opacity-50 cursor-not-allowed'
-                self.fields['masking_enabled'].help_text = "Number masking requires a premium plan"
+            if user_plan and user_plan.max_masking_sessions > 0:
+                self.fields['masking_enabled'].help_text = f"Enable number masking for this vehicle (Plan allows {user_plan.max_masking_sessions} concurrent sessions). When enabled, the first contact number you add will be used for Twilio call connections."
             else:
-                self.fields['masking_enabled'].help_text = f"Enable number masking for this vehicle (Plan allows {user_plan.max_masking_sessions} concurrent sessions)"
+                self.fields['masking_enabled'].help_text = "Enable number masking for this vehicle. When enabled, the first contact number you add will be used for Twilio call connections."
     
     def clean_license_plate(self):
         license_plate = self.cleaned_data['license_plate']

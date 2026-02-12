@@ -11,9 +11,18 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables from .env file if it exists
+try:
+    from dotenv import load_dotenv
+    load_dotenv(BASE_DIR / '.env')
+except ImportError:
+    # python-dotenv not installed, skip loading .env file
+    pass
 
 
 # Quick-start development settings - unsuitable for production
@@ -26,6 +35,22 @@ SECRET_KEY = 'django-insecure-b(w!m0%+*mijsm2&gwv=m6p4_s-9g1s0512-v&)l&u@40jn3gc
 DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
+
+# Base URL for Twilio callbacks (MUST be publicly accessible)
+# For local development, use ngrok: https://ngrok.com/
+# Set this as an environment variable or in .env file
+BASE_URL = os.environ.get('BASE_URL', '') 
+
+# CSRF Trusted Origins - Required for ngrok and external domains
+# Automatically add BASE_URL if it's set
+CSRF_TRUSTED_ORIGINS = []
+if BASE_URL:
+    CSRF_TRUSTED_ORIGINS.append(BASE_URL)
+# Add localhost for local development
+CSRF_TRUSTED_ORIGINS.extend([
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+])
 
 
 # Application definition
@@ -159,4 +184,12 @@ EMERGENCY_NUMBERS = {
 }
 
 # Groq API Configuration
-GROQ_API_KEY = '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'
+# Set this as an environment variable or in .env file
+GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '')
+
+# Twilio Configuration for Call Connection
+# Get these from https://www.twilio.com/console
+# Set these as environment variables or in .env file
+TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID', '')
+TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN', '')
+TWILIO_PHONE_NUMBER = os.environ.get('TWILIO_PHONE_NUMBER', '')

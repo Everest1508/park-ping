@@ -31,6 +31,9 @@ urlpatterns = [
     path('qr/<uuid:qr_id>/contact/', views.contact_owner_api, name='contact_owner_api'),
     path('qr/<uuid:qr_id>/masked-number/', views.get_masked_number_api, name='get_masked_number_api'),
     path('qr/<uuid:qr_id>/terminate-masking/', views.terminate_masking_session_api, name='terminate_masking_session_api'),
+    path('qr/<uuid:qr_id>/initiate-call/', views.initiate_twilio_call, name='initiate_twilio_call'),
+    path('qr/<uuid:qr_id>/twilio-connect/', views.twilio_connect_twiml, name='twilio_connect_twiml'),
+    path('qr/<uuid:qr_id>/twilio-status/', views.twilio_status_callback, name='twilio_status_callback'),
     path('search/', views.search_vehicle, name='search_vehicle'),
     
     # Chatbot

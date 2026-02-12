@@ -75,7 +75,7 @@
                   </div>
                 {% endif %}
 
-                <!-- Contact Methods -->
+                <!-- Contact Methods - Only show Call button -->
                 <div>
                   <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                     <div class="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center mr-3">
@@ -97,43 +97,6 @@
                       </div>
                     {% endif %}
 
-                    {% if contact_info.masking_enabled %}
-                      <!-- Masking enabled - hide phone number -->
-                      <div class="flex items-center p-4 bg-green-50 rounded-lg border border-green-100 hover-lift">
-                        <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center mr-4">
-                          <i data-lucide="shield" class="w-5 h-5 text-white"></i>
-                        </div>
-                        <div class="flex-1">
-                          <p class="text-sm text-green-600 font-medium">Contact Number</p>
-                          <p class="text-lg text-gray-900 font-semibold mb-2" id="phone-display">Click to reveal number</p>
-                          <div id="masking-info" class="text-xs text-green-600">
-                            <i data-lucide="shield" class="w-3 h-3 inline mr-1"></i>
-                            <span id="masking-status">Number masking enabled</span>
-                            <span id="expiry-info" class="ml-2"></span>
-                          </div>
-                        </div>
-                        <button id="call-button" class="ml-4 inline-flex items-center px-4 py-2 bg-green-500 text-white text-sm font-medium rounded-lg hover:bg-green-600 shadow-sm hover:shadow-md transition-all" onclick="handleCallClick()">
-                          <i data-lucide="phone-call" class="w-4 h-4 mr-2"></i>
-                          <span id="call-button-text">Call Now</span>
-                        </button>
-                      </div>
-                    {% elif contact_info.phone %}
-                      <!-- Regular phone display -->
-                      <div class="flex items-center p-4 bg-green-50 rounded-lg border border-green-100 hover-lift">
-                        <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center mr-4">
-                          <i data-lucide="phone" class="w-5 h-5 text-white"></i>
-                        </div>
-                        <div class="flex-1">
-                          <p class="text-sm text-green-600 font-medium">Phone Number</p>
-                          <p class="text-lg text-gray-900 font-semibold">{{ contact_info.phone }}</p>
-                        </div>
-                        <a href="tel:{{ contact_info.phone }}" class="ml-4 inline-flex items-center px-4 py-2 bg-green-500 text-white text-sm font-medium rounded-lg hover:bg-green-600 shadow-sm hover:shadow-md transition-all">
-                          <i data-lucide="phone-call" class="w-4 h-4 mr-2"></i>
-                          Call Now
-                        </a>
-                      </div>
-                    {% endif %}
-
                     {% if contact_info.email %}
                       <div class="flex items-center p-4 bg-green-50 rounded-lg border border-green-100 hover-lift">
                         <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center mr-4">
@@ -150,76 +113,29 @@
                       </div>
                     {% endif %}
 
-                    {% if contact_info.emergency_contact %}
-                      <div class="flex items-center p-4 bg-green-50 rounded-lg border border-green-100 hover-lift">
-                        <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center mr-4">
-                          <i data-lucide="alert-circle" class="w-5 h-5 text-white"></i>
+                    <!-- Call Button - Always show if contact info exists -->
+                    {% if contact_info %}
+                      <div class="p-6 bg-green-50 rounded-lg border border-green-100">
+                        <div class="text-center mb-4">
+                          <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i data-lucide="phone-call" class="w-8 h-8 text-white"></i>
+                          </div>
+                          <h4 class="text-lg font-semibold text-gray-900 mb-2">Need to Contact the Owner?</h4>
+                          <p class="text-sm text-gray-600">Click the button below to connect via phone call</p>
                         </div>
-                        <div class="flex-1">
-                          <p class="text-sm text-green-600 font-medium">Emergency Contact</p>
-                          <p class="text-lg text-gray-900 font-semibold">{{ contact_info.emergency_contact }}</p>
-                        </div>
-                        <a href="tel:{{ contact_info.emergency_contact }}" class="ml-4 inline-flex items-center px-4 py-2 bg-green-500 text-white text-sm font-medium rounded-lg hover:bg-green-600 shadow-sm hover:shadow-md transition-all">
-                          <i data-lucide="phone-call" class="w-4 h-4 mr-2"></i>
-                          Call Emergency
-                        </a>
-                      </div>
-                    {% endif %}
-
-                    {% if contact_info.helpline %}
-                      <div class="flex items-center p-4 bg-green-50 rounded-lg border border-green-100 hover-lift">
-                        <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center mr-4">
-                          <i data-lucide="phone" class="w-5 h-5 text-white"></i>
-                        </div>
-                        <div class="flex-1">
-                          <p class="text-sm text-green-600 font-medium">
-                            {% if contact_info.helpline_is_default %}
-                              ParkPing Helpline
-                            {% else %}
-                              Helpline Number
-                            {% endif %}
-                          </p>
-                          <p class="text-lg text-gray-900 font-semibold">{{ contact_info.helpline }}</p>
-                        </div>
-                        <a href="tel:{{ contact_info.helpline }}" class="ml-4 inline-flex items-center px-4 py-2 bg-green-500 text-white text-sm font-medium rounded-lg hover:bg-green-600 shadow-sm hover:shadow-md transition-all">
-                          <i data-lucide="phone-call" class="w-4 h-4 mr-2"></i>
-                          Call Helpline
-                        </a>
+                        
+                        <button 
+                          type="button" 
+                          id="show-call-form-button"
+                          class="w-full inline-flex items-center justify-center px-6 py-4 bg-green-500 text-white text-lg font-semibold rounded-lg hover:bg-green-600 shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+                        >
+                          <i data-lucide="phone" class="w-6 h-6 mr-3"></i>
+                          Call Owner
+                        </button>
                       </div>
                     {% endif %}
                   </div>
                 </div>
-
-                <!-- Additional Actions -->
-                {% if contact_info.masking_enabled or contact_info.phone %}
-                  <div class="border-t border-gray-200 pt-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                      <div class="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center mr-3">
-                        <i data-lucide="message-circle" class="w-4 h-4 text-white"></i>
-                      </div>
-                      Quick Actions
-                    </h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {% if contact_info.masking_enabled %}
-                        <button id="quick-call-button" onclick="handleCallClick()" class="flex items-center justify-center px-6 py-4 bg-green-500 text-white text-sm font-medium rounded-xl hover:bg-green-600 shadow-sm hover:shadow-md transition-all">
-                          <i data-lucide="phone" class="w-5 h-5 mr-2"></i>
-                          <span id="quick-call-text">Call Owner</span>
-                        </button>
-                      {% else %}
-                        <a href="tel:{{ contact_info.phone }}" class="flex items-center justify-center px-6 py-4 bg-green-500 text-white text-sm font-medium rounded-xl hover:bg-green-600 shadow-sm hover:shadow-md transition-all">
-                          <i data-lucide="phone" class="w-5 h-5 mr-2"></i>
-                          Call Owner
-                        </a>
-                      {% endif %}
-                      {% if contact_info.phone %}
-                        <a href="sms:{{ contact_info.phone }}" class="flex items-center justify-center px-6 py-4 bg-green-500 text-white text-sm font-medium rounded-xl hover:bg-green-600 shadow-sm hover:shadow-md transition-all">
-                          <i data-lucide="message-square" class="w-5 h-5 mr-2"></i>
-                          Send SMS
-                        </a>
-                      {% endif %}
-                    </div>
-                  </div>
-                {% endif %}
               </div>
             {% else %}
               <!-- No Contact Info Available -->
@@ -234,7 +150,7 @@
           </div>
         </div>
 
-        <!-- Emergency Numbers Section -->
+        <!-- Emergency Services Section - Only show buttons, no numbers -->
         <div class="mt-8">
           <div class="bg-white rounded-2xl card-shadow overflow-hidden">
             <div class="bg-green-500 px-6 py-6 text-center">
@@ -242,19 +158,18 @@
                 <i data-lucide="alert-triangle" class="w-8 h-8 text-green-500"></i>
               </div>
               <h3 class="text-2xl font-bold text-white mb-2">Emergency Services</h3>
-              <p class="text-green-100">Important numbers for emergencies</p>
+              <p class="text-green-100">Quick access to emergency services</p>
             </div>
             <div class="p-6">
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <!-- Police -->
                 {% if emergency_numbers.police %}
-                  <a href="tel:{{ emergency_numbers.police }}" class="flex items-center p-4 bg-green-50 rounded-xl border border-green-100 hover-lift">
+                  <a href="tel:{{ emergency_numbers.police }}" class="flex items-center justify-center p-4 bg-green-50 rounded-xl border border-green-100 hover-lift">
                     <div class="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center mr-4">
                       <i data-lucide="shield" class="w-6 h-6 text-white"></i>
                     </div>
                     <div class="flex-1">
-                      <p class="text-xs text-green-600 font-medium mb-1">Police</p>
-                      <p class="text-lg text-gray-900 font-semibold">{{ emergency_numbers.police }}</p>
+                      <p class="text-sm text-green-600 font-semibold">Police</p>
                     </div>
                     <i data-lucide="phone-call" class="w-5 h-5 text-green-500"></i>
                   </a>
@@ -262,13 +177,12 @@
 
                 <!-- Ambulance -->
                 {% if emergency_numbers.ambulance %}
-                  <a href="tel:{{ emergency_numbers.ambulance }}" class="flex items-center p-4 bg-green-50 rounded-xl border border-green-100 hover-lift">
+                  <a href="tel:{{ emergency_numbers.ambulance }}" class="flex items-center justify-center p-4 bg-green-50 rounded-xl border border-green-100 hover-lift">
                     <div class="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center mr-4">
                       <i data-lucide="heart-pulse" class="w-6 h-6 text-white"></i>
                     </div>
                     <div class="flex-1">
-                      <p class="text-xs text-green-600 font-medium mb-1">Ambulance</p>
-                      <p class="text-lg text-gray-900 font-semibold">{{ emergency_numbers.ambulance }}</p>
+                      <p class="text-sm text-green-600 font-semibold">Ambulance</p>
                     </div>
                     <i data-lucide="phone-call" class="w-5 h-5 text-green-500"></i>
                   </a>
@@ -276,13 +190,12 @@
 
                 <!-- Fire Department -->
                 {% if emergency_numbers.fire %}
-                  <a href="tel:{{ emergency_numbers.fire }}" class="flex items-center p-4 bg-green-50 rounded-xl border border-green-100 hover-lift">
+                  <a href="tel:{{ emergency_numbers.fire }}" class="flex items-center justify-center p-4 bg-green-50 rounded-xl border border-green-100 hover-lift">
                     <div class="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center mr-4">
                       <i data-lucide="flame" class="w-6 h-6 text-white"></i>
                     </div>
                     <div class="flex-1">
-                      <p class="text-xs text-green-600 font-medium mb-1">Fire Department</p>
-                      <p class="text-lg text-gray-900 font-semibold">{{ emergency_numbers.fire }}</p>
+                      <p class="text-sm text-green-600 font-semibold">Fire Department</p>
                     </div>
                     <i data-lucide="phone-call" class="w-5 h-5 text-green-500"></i>
                   </a>
@@ -290,13 +203,12 @@
 
                 <!-- Women Helpline -->
                 {% if emergency_numbers.women_helpline %}
-                  <a href="tel:{{ emergency_numbers.women_helpline }}" class="flex items-center p-4 bg-green-50 rounded-xl border border-green-100 hover-lift">
+                  <a href="tel:{{ emergency_numbers.women_helpline }}" class="flex items-center justify-center p-4 bg-green-50 rounded-xl border border-green-100 hover-lift">
                     <div class="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center mr-4">
                       <i data-lucide="heart" class="w-6 h-6 text-white"></i>
                     </div>
                     <div class="flex-1">
-                      <p class="text-xs text-green-600 font-medium mb-1">Women Helpline</p>
-                      <p class="text-lg text-gray-900 font-semibold">{{ emergency_numbers.women_helpline }}</p>
+                      <p class="text-sm text-green-600 font-semibold">Women Helpline</p>
                     </div>
                     <i data-lucide="phone-call" class="w-5 h-5 text-green-500"></i>
                   </a>
@@ -304,13 +216,12 @@
 
                 <!-- Child Helpline -->
                 {% if emergency_numbers.child_helpline %}
-                  <a href="tel:{{ emergency_numbers.child_helpline }}" class="flex items-center p-4 bg-green-50 rounded-xl border border-green-100 hover-lift">
+                  <a href="tel:{{ emergency_numbers.child_helpline }}" class="flex items-center justify-center p-4 bg-green-50 rounded-xl border border-green-100 hover-lift">
                     <div class="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center mr-4">
                       <i data-lucide="users" class="w-6 h-6 text-white"></i>
                     </div>
                     <div class="flex-1">
-                      <p class="text-xs text-green-600 font-medium mb-1">Child Helpline</p>
-                      <p class="text-lg text-gray-900 font-semibold">{{ emergency_numbers.child_helpline }}</p>
+                      <p class="text-sm text-green-600 font-semibold">Child Helpline</p>
                     </div>
                     <i data-lucide="phone-call" class="w-5 h-5 text-green-500"></i>
                   </a>
@@ -318,13 +229,12 @@
 
                 <!-- Roadside Assistance / Traffic Helpline -->
                 {% if emergency_numbers.roadside_assistance %}
-                  <a href="tel:{{ emergency_numbers.roadside_assistance }}" class="flex items-center p-4 bg-green-50 rounded-xl border border-green-100 hover-lift sm:col-span-2">
+                  <a href="tel:{{ emergency_numbers.roadside_assistance }}" class="flex items-center justify-center p-4 bg-green-50 rounded-xl border border-green-100 hover-lift sm:col-span-2">
                     <div class="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center mr-4">
                       <i data-lucide="wrench" class="w-6 h-6 text-white"></i>
                     </div>
                     <div class="flex-1">
-                      <p class="text-xs text-green-600 font-medium mb-1">Traffic / Roadside Assistance</p>
-                      <p class="text-lg text-gray-900 font-semibold">{{ emergency_numbers.roadside_assistance }}</p>
+                      <p class="text-sm text-green-600 font-semibold">Traffic / Roadside Assistance</p>
                     </div>
                     <i data-lucide="phone-call" class="w-5 h-5 text-green-500"></i>
                   </a>
@@ -356,181 +266,269 @@
     </main>
   </div>
 
+  <!-- Call Form Modal -->
+  <div id="call-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="text-xl font-bold text-gray-900">Connect with Owner</h3>
+        <button id="close-modal" class="text-gray-400 hover:text-gray-600 transition-colors">
+          <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+      </div>
+      
+      <div class="mb-6">
+        <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i data-lucide="phone-call" class="w-8 h-8 text-white"></i>
+        </div>
+        <p class="text-center text-gray-600 mb-4">Select which contact to call and enter your phone number</p>
+      </div>
+      
+      <form id="call-connection-form" class="space-y-4">
+        <!-- Contact Selection -->
+        {% if contact_info.available_contacts and contact_info.available_contacts|length > 0 %}
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Select Contact to Call *
+            </label>
+            <div class="space-y-2 max-h-48 overflow-y-auto">
+              {% for contact in contact_info.available_contacts %}
+                <label class="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-green-50 hover:border-green-300 transition-colors">
+                  <input 
+                    type="radio" 
+                    name="owner_contact" 
+                    value="{{ contact.phone_number }}"
+                    class="mr-3 text-green-500 focus:ring-green-500"
+                    {% if contact.is_primary or forloop.first %}checked{% endif %}
+                    required
+                  >
+                  <div class="flex-1">
+                    <div class="flex items-center">
+                      <span class="text-sm font-semibold text-gray-900">{{ contact.relation }}</span>
+                      {% if contact.is_primary %}
+                        <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          Primary
+                        </span>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <i data-lucide="phone" class="w-5 h-5 text-green-500"></i>
+                </label>
+              {% endfor %}
+            </div>
+          </div>
+        {% elif contact_info.phone %}
+          <!-- Fallback: Use contact_phone if no contacts list available -->
+          <input type="hidden" name="owner_contact" value="{{ contact_info.phone }}">
+          <div class="p-3 bg-green-50 rounded-lg border border-green-200">
+            <p class="text-sm text-gray-600">You will be connected to the vehicle owner</p>
+          </div>
+        {% endif %}
+        
+        <!-- Scanner Phone Number Input -->
+        <div>
+          <label for="scanner-phone" class="block text-sm font-medium text-gray-700 mb-2">
+            Your Phone Number *
+          </label>
+          <input 
+            type="tel" 
+            id="scanner-phone" 
+            name="scanner_phone"
+            placeholder="e.g., +91 9876543210"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
+            required
+            autocomplete="tel"
+          >
+          <p class="text-xs text-gray-500 mt-1">We'll connect you with the selected contact via Twilio</p>
+        </div>
+        
+        <button 
+          type="submit" 
+          id="connect-call-button"
+          class="w-full inline-flex items-center justify-center px-6 py-3 bg-green-500 text-white text-sm font-medium rounded-lg hover:bg-green-600 shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <i data-lucide="phone-call" class="w-4 h-4 mr-2"></i>
+          <span id="connect-button-text">Connect Call</span>
+        </button>
+      </form>
+      
+      <!-- Status Messages -->
+      <div id="call-status" class="mt-4 hidden">
+        <div class="p-3 rounded-lg" id="status-content">
+          <p class="text-sm" id="status-message"></p>
+        </div>
+      </div>
+      
+      <div class="mt-4 text-xs text-green-600 text-center">
+        <i data-lucide="shield" class="w-3 h-3 inline mr-1"></i>
+        <span>Your number will remain private. Twilio will connect both parties.</span>
+      </div>
+    </div>
+  </div>
+
   <script>
-    // Global variables for masking functionality
-    let currentMaskedNumber = null;
-    let currentSessionId = null;
-    let maskingExpiryTime = null;
-    let maskingTimer = null;
-    
     document.addEventListener('DOMContentLoaded', function() {
       // Initialize Lucide icons
       lucide.createIcons();
       
-      // Check for existing masking session on page load
-      checkExistingMaskingSession();
+      // Get modal elements
+      const showCallFormButton = document.getElementById('show-call-form-button');
+      const callModal = document.getElementById('call-modal');
+      const closeModal = document.getElementById('close-modal');
+      const callForm = document.getElementById('call-connection-form');
+      
+      // Show modal when button is clicked
+      if (showCallFormButton) {
+        showCallFormButton.addEventListener('click', function() {
+          if (callModal) {
+            callModal.classList.remove('hidden');
+            // Focus on phone input
+            const phoneInput = document.getElementById('scanner-phone');
+            if (phoneInput) {
+              setTimeout(() => phoneInput.focus(), 100);
+            }
+            // Reinitialize icons
+            lucide.createIcons();
+          }
+        });
+      }
+      
+      // Close modal
+      if (closeModal) {
+        closeModal.addEventListener('click', function() {
+          if (callModal) {
+            callModal.classList.add('hidden');
+          }
+        });
+      }
+      
+      // Close modal when clicking outside
+      if (callModal) {
+        callModal.addEventListener('click', function(e) {
+          if (e.target === callModal) {
+            callModal.classList.add('hidden');
+          }
+        });
+      }
+      
+      // Handle call connection form submission
+      if (callForm) {
+        callForm.addEventListener('submit', handleCallConnection);
+      }
     });
     
-    async function handleCallClick() {
-      const callButton = document.getElementById('call-button');
-      const quickCallButton = document.getElementById('quick-call-button');
-      const callButtonText = document.getElementById('call-button-text');
-      const quickCallText = document.getElementById('quick-call-text');
+    async function handleCallConnection(event) {
+      event.preventDefault();
       
-      // Disable buttons during processing
-      if (callButton) callButton.disabled = true;
-      if (quickCallButton) quickCallButton.disabled = true;
-      if (callButtonText) callButtonText.textContent = 'Getting masked number...';
-      if (quickCallText) quickCallText.textContent = 'Getting masked number...';
+      const phoneInput = document.getElementById('scanner-phone');
+      const connectButton = document.getElementById('connect-call-button');
+      const connectButtonText = document.getElementById('connect-button-text');
+      const callStatus = document.getElementById('call-status');
+      const statusContent = document.getElementById('status-content');
+      const statusMessage = document.getElementById('status-message');
+      
+      const scannerPhone = phoneInput.value.trim();
+      // Get selected contact (radio button) or hidden input (fallback)
+      const ownerContactRadio = document.querySelector('input[name="owner_contact"]:checked');
+      const ownerContactHidden = document.querySelector('input[name="owner_contact"][type="hidden"]');
+      const ownerContact = ownerContactRadio || ownerContactHidden;
+      
+      if (!scannerPhone) {
+        showStatus('Please enter your phone number', 'error');
+        return;
+      }
+      
+      if (!ownerContact) {
+        showStatus('No contact available. Please try again later.', 'error');
+        return;
+      }
+      
+      const ownerPhone = ownerContact.value;
+      
+      // Disable form during processing
+      phoneInput.disabled = true;
+      connectButton.disabled = true;
+      connectButtonText.textContent = 'Connecting...';
       
       try {
-        const response = await fetch(`/parking/qr/{{ vehicle.qr_unique_id }}/masked-number/`, {
+        const response = await fetch(`/parking/qr/{{ vehicle.qr_unique_id }}/initiate-call/`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'X-CSRFToken': getCookie('csrftoken')
           },
-          body: JSON.stringify({})
+          body: JSON.stringify({
+            phone_number: scannerPhone,
+            owner_phone: ownerPhone
+          })
         });
         
         const data = await response.json();
         
         if (data.success) {
-          // Update UI with masked number
-          currentMaskedNumber = data.masked_number;
-          currentSessionId = data.session_id;
-          maskingExpiryTime = new Date(data.expires_at);
+          showStatus('Call initiated! You will be connected with the vehicle owner shortly. Please answer your phone when it rings.', 'success');
+          connectButtonText.textContent = 'Call Initiated';
+          connectButton.classList.add('bg-green-600');
           
-          // Update phone display
-          const phoneDisplay = document.getElementById('phone-display');
-          if (phoneDisplay) phoneDisplay.textContent = data.masked_number;
-          
-          // Show masking info
-          const maskingInfo = document.getElementById('masking-info');
-          if (maskingInfo) maskingInfo.classList.remove('hidden');
-          
-          // Update masking status
-          const maskingStatus = document.getElementById('masking-status');
-          const expiryInfo = document.getElementById('expiry-info');
-          
-          if (maskingStatus) {
-            if (data.is_existing) {
-              maskingStatus.textContent = 'Using existing masked number';
-            } else {
-              maskingStatus.textContent = 'New masked number generated';
+          // Close modal after 3 seconds on success
+          setTimeout(() => {
+            const callModal = document.getElementById('call-modal');
+            if (callModal) {
+              callModal.classList.add('hidden');
             }
-          }
-          
-          // Set expiry countdown
-          updateExpiryCountdown();
-          
-          // Update button text
-          if (callButtonText) callButtonText.textContent = 'Call Masked Number';
-          if (quickCallText) quickCallText.textContent = 'Call Masked Number';
-          
-          // Update href to use masked number
-          if (callButton) callButton.onclick = () => window.location.href = `tel:${data.masked_number}`;
-          if (quickCallButton) quickCallButton.onclick = () => window.location.href = `tel:${data.masked_number}`;
-          
-          // Show success message
-          showNotification('Masked number generated successfully!', 'success');
-          
+          }, 3000);
         } else if (data.upgrade_required) {
-          const planName = data.plan_name || 'Free Plan';
-          showNotification(`Number masking is not available for your ${planName}. Please upgrade to a premium plan to use this feature.`, 'warning');
-          // Fallback to direct call
-          setTimeout(() => {
-            window.location.href = `tel:{{ contact_info.phone }}`;
-          }, 2000);
+          // Show the error message from the server, which includes plan-specific details
+          const errorMessage = data.error || `Number masking is not available for your plan. Please contact the vehicle owner directly.`;
+          showStatus(errorMessage, 'warning');
         } else if (data.vehicle_masking_disabled) {
-          showNotification('Number masking is not enabled for this vehicle.', 'warning');
-          // Fallback to direct call
-          setTimeout(() => {
-            window.location.href = `tel:{{ contact_info.phone }}`;
-          }, 2000);
+          showStatus('Number masking is not enabled for this vehicle.', 'warning');
         } else if (data.limit_reached) {
-          showNotification(`You have reached the maximum number of concurrent masking sessions (${data.max_sessions}) for your ${data.plan_name}. Please wait for existing sessions to expire or upgrade your plan.`, 'warning');
-          // Fallback to direct call
-          setTimeout(() => {
-            window.location.href = `tel:{{ contact_info.phone }}`;
-          }, 2000);
+          showStatus(`Maximum concurrent masking sessions reached (${data.max_sessions}). Please try again later.`, 'warning');
         } else {
-          showNotification(data.error || 'Failed to get masked number', 'error');
-          // Fallback to direct call
-          setTimeout(() => {
-            window.location.href = `tel:{{ contact_info.phone }}`;
-          }, 2000);
+          showStatus(data.error || 'Failed to initiate call. Please try again.', 'error');
+          // Re-enable form on error
+          phoneInput.disabled = false;
+          connectButton.disabled = false;
+          connectButtonText.textContent = 'Connect Call';
         }
         
       } catch (error) {
-        console.error('Error getting masked number:', error);
-        showNotification('Error getting masked number. Using direct call.', 'error');
-        // Fallback to direct call
-        window.location.href = `tel:{{ contact_info.phone }}`;
-      } finally {
-        // Re-enable buttons
-        if (callButton) callButton.disabled = false;
-        if (quickCallButton) quickCallButton.disabled = false;
+        console.error('Error initiating call:', error);
+        showStatus('Error connecting call. Please check your internet connection and try again.', 'error');
+        // Re-enable form on error
+        phoneInput.disabled = false;
+        connectButton.disabled = false;
+        connectButtonText.textContent = 'Connect Call';
       }
     }
     
-    async function checkExistingMaskingSession() {
-      // This could be enhanced to check for existing sessions
-      // For now, we'll start fresh each time
-    }
-    
-    function updateExpiryCountdown() {
-      if (!maskingExpiryTime) return;
+    function showStatus(message, type) {
+      const callStatus = document.getElementById('call-status');
+      const statusContent = document.getElementById('status-content');
+      const statusMessage = document.getElementById('status-message');
       
-      const expiryInfo = document.getElementById('expiry-info');
+      if (!callStatus || !statusContent || !statusMessage) return;
       
-      function updateCountdown() {
-        const now = new Date();
-        const timeLeft = maskingExpiryTime - now;
-        
-        if (timeLeft <= 0) {
-          if (expiryInfo) expiryInfo.textContent = 'Session expired';
-          // Reset to original number
-          resetToOriginalNumber();
-          return;
-        }
-        
-        const minutes = Math.floor(timeLeft / 60000);
-        const seconds = Math.floor((timeLeft % 60000) / 1000);
-        
-        if (expiryInfo) expiryInfo.textContent = `Expires in ${minutes}:${seconds.toString().padStart(2, '0')}`;
+      // Set message
+      statusMessage.textContent = message;
+      
+      // Set styling based on type
+      statusContent.className = 'p-3 rounded-lg';
+      if (type === 'success') {
+        statusContent.classList.add('bg-green-100', 'text-green-800', 'border', 'border-green-200');
+      } else if (type === 'error') {
+        statusContent.classList.add('bg-red-100', 'text-red-800', 'border', 'border-red-200');
+      } else if (type === 'warning') {
+        statusContent.classList.add('bg-yellow-100', 'text-yellow-800', 'border', 'border-yellow-200');
+      } else {
+        statusContent.classList.add('bg-blue-100', 'text-blue-800', 'border', 'border-blue-200');
       }
       
-      updateCountdown();
-      maskingTimer = setInterval(updateCountdown, 1000);
-    }
-    
-    function resetToOriginalNumber() {
-      if (maskingTimer) {
-        clearInterval(maskingTimer);
-        maskingTimer = null;
-      }
+      // Show status
+      callStatus.classList.remove('hidden');
       
-      // Reset UI
-      const phoneDisplay = document.getElementById('phone-display');
-      const maskingInfo = document.getElementById('masking-info');
-      const callButtonText = document.getElementById('call-button-text');
-      const quickCallText = document.getElementById('quick-call-text');
-      const callButton = document.getElementById('call-button');
-      const quickCallButton = document.getElementById('quick-call-button');
-      
-      if (phoneDisplay) phoneDisplay.textContent = 'Click to reveal number';
-      if (maskingInfo) maskingInfo.classList.remove('hidden');
-      if (callButtonText) callButtonText.textContent = 'Call Now';
-      if (quickCallText) quickCallText.textContent = 'Call Owner';
-      
-      // Reset onclick handlers
-      if (callButton) callButton.onclick = handleCallClick;
-      if (quickCallButton) quickCallButton.onclick = handleCallClick;
-      
-      currentMaskedNumber = null;
-      currentSessionId = null;
-      maskingExpiryTime = null;
+      // Scroll to status
+      callStatus.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
     
     function showNotification(message, type = 'info') {

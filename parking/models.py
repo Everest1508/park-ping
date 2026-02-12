@@ -160,6 +160,17 @@ class Vehicle(models.Model):
             if default_helpline:
                 info['helpline'] = default_helpline
                 info['helpline_is_default'] = True
+        
+        # Multiple contacts with relations
+        info['available_contacts'] = []
+        for contact in self.contacts.filter(show_in_qr=True).order_by('-is_primary', 'relation', 'created_at'):
+            info['available_contacts'].append({
+                'phone_number': contact.phone_number,
+                'relation': contact.get_relation_display(),
+                'relation_code': contact.relation,
+                'is_primary': contact.is_primary,
+            })
+        
         return info
 
 
@@ -256,11 +267,13 @@ class PhoneNumberMasking(models.Model):
     # Core fields
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, related_name='masking_sessions')
     original_phone = models.CharField(max_length=17, help_text="Original phone number being masked")
-    masked_phone = models.CharField(max_length=17, help_text="Generated masked phone number")
+    masked_phone = models.CharField(max_length=17, help_text="Generated masked phone number or scanner number")
+    scanner_phone = models.CharField(max_length=17, blank=True, null=True, help_text="Scanner's phone number (for Twilio connection)")
     
     # Session management
     session_id = models.UUIDField(default=uuid.uuid4, unique=True, help_text="Unique session identifier")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
+    twilio_call_sid = models.CharField(max_length=50, blank=True, null=True, help_text="Twilio Call SID for tracking")
     
     # Timing
     created_at = models.DateTimeField(auto_now_add=True)

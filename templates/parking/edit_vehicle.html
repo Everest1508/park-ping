@@ -117,24 +117,54 @@
                 <label class="block text-xs font-medium text-gray-700">Contact Numbers</label>
                 <button type="button" id="add-contact" class="inline-flex items-center px-3 py-1.5 bg-green-500 text-white text-xs font-medium rounded-lg hover:bg-green-600 transition-colors">
                   <i data-lucide="plus" class="w-3 h-3 mr-1"></i>
-                  Add Contact
+                  Add Additional Contact
                 </button>
               </div>
               
               <div id="contacts-container" class="space-y-3">
-                {% if vehicle.contacts.exists %}
-                  {% for contact in vehicle.contacts.all %}
+                <!-- Primary Contact (Required) -->
+                {% with primary_contact=existing_contacts|first %}
+                <div class="contact-item flex gap-3 items-start p-3 bg-green-50 rounded-lg border-2 border-green-200">
+                  <div class="flex-1">
+                    <div>
+                      <label class="block text-xs font-medium text-gray-700 mb-1">Owner's Phone Number *</label>
+                      {% if user_phone_numbers %}
+                        <select name="primary_contact_phone" required
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm bg-white">
+                          <option value="">Select your phone number</option>
+                          {% for phone in user_phone_numbers %}
+                            <option value="{{ phone.phone_number }}" {% if primary_contact and phone.phone_number == primary_contact.phone_number %}selected{% endif %}>{{ phone.phone_number }}{% if phone.label %} ({{ phone.label }}){% endif %}{% if phone.is_primary %} - Primary{% endif %}</option>
+                          {% endfor %}
+                        </select>
+                        <p class="mt-1 text-xs text-gray-500">Select from your saved phone numbers</p>
+                      {% else %}
+                        <p class="text-xs text-red-600">Please add a phone number in your account settings first.</p>
+                        <a href="{% url 'accounts:phone_numbers' %}" class="text-xs text-green-600 hover:text-green-700 underline">Add Phone Number</a>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="mt-6">
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      Owner
+                    </span>
+                  </div>
+                </div>
+                {% endwith %}
+                
+                <!-- Additional Contacts (Optional) -->
+                {% for contact in existing_contacts %}
+                  {% if not contact.is_primary %}
                     <div class="contact-item flex gap-3 items-start p-3 bg-gray-50 rounded-lg border border-gray-200">
                       <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                          <label class="block text-xs font-medium text-gray-700 mb-1">Phone Number *</label>
-                          <input type="tel" name="contact_phone_{{ forloop.counter0 }}" value="{{ contact.phone_number }}" required
+                          <label class="block text-xs font-medium text-gray-700 mb-1">Phone Number</label>
+                          <input type="tel" name="contact_phone_{{ forloop.counter }}" value="{{ contact.phone_number }}"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm"
                             placeholder="e.g., +1234567890">
                         </div>
                         <div>
-                          <label class="block text-xs font-medium text-gray-700 mb-1">Relation *</label>
-                          <select name="contact_relation_{{ forloop.counter0 }}" required
+                          <label class="block text-xs font-medium text-gray-700 mb-1">Relation</label>
+                          <select name="contact_relation_{{ forloop.counter }}"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm">
                             <option value="family" {% if contact.relation == 'family' %}selected{% endif %}>Family Member</option>
                             <option value="friend" {% if contact.relation == 'friend' %}selected{% endif %}>Friend</option>
@@ -144,41 +174,15 @@
                           </select>
                         </div>
                       </div>
-                      <button type="button" class="remove-contact mt-6 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors {% if vehicle.contacts.count == 1 %}hidden{% endif %}">
+                      <button type="button" class="remove-contact mt-6 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors">
                         <i data-lucide="trash-2" class="w-4 h-4"></i>
                       </button>
                     </div>
-                  {% endfor %}
-                {% else %}
-                  <!-- Default contact field -->
-                  <div class="contact-item flex gap-3 items-start p-3 bg-gray-50 rounded-lg border border-gray-200">
-                    <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">Phone Number *</label>
-                        <input type="tel" name="contact_phone_0" required
-                          class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm"
-                          placeholder="e.g., +1234567890">
-                      </div>
-                      <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">Relation *</label>
-                        <select name="contact_relation_0" required
-                          class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm">
-                          <option value="family">Family Member</option>
-                          <option value="friend">Friend</option>
-                          <option value="colleague">Colleague</option>
-                          <option value="emergency">Emergency Contact</option>
-                          <option value="other">Other</option>
-                        </select>
-                      </div>
-                    </div>
-                    <button type="button" class="remove-contact mt-6 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors hidden">
-                      <i data-lucide="trash-2" class="w-4 h-4"></i>
-                    </button>
-                  </div>
-                {% endif %}
+                  {% endif %}
+                {% endfor %}
               </div>
               
-              <p class="mt-2 text-xs text-gray-500">Add multiple contact numbers with their relations (Owner, Family, Friend, etc.)</p>
+              <p class="mt-2 text-xs text-gray-500">Primary contact is required. You can add additional optional contacts below.</p>
             </div>
 
             <!-- Emergency Contact and Helpline -->
@@ -260,6 +264,10 @@
                   <label for="{{ form.masking_enabled.id_for_label }}" class="ml-2 block text-sm text-gray-700">
                     Enable number masking
                     <span class="text-xs text-gray-500 block">{{ form.masking_enabled.help_text }}</span>
+                    <span class="text-xs text-orange-600 block mt-1">
+                      <i data-lucide="alert-circle" class="w-3 h-3 inline mr-1"></i>
+                      <strong>Note:</strong> You must add at least one contact number above for masking to work. The first contact will be used for call connections.
+                    </span>
                   </label>
                 </div>
               </div>
@@ -354,14 +362,14 @@
         newContact.innerHTML = `
           <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label class="block text-xs font-medium text-gray-700 mb-1">Phone Number *</label>
-              <input type="tel" name="contact_phone_${contactCount}" required
+              <label class="block text-xs font-medium text-gray-700 mb-1">Phone Number</label>
+              <input type="tel" name="contact_phone_${contactCount}"
                 class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm"
                 placeholder="e.g., +1234567890">
             </div>
             <div>
-              <label class="block text-xs font-medium text-gray-700 mb-1">Relation *</label>
-              <select name="contact_relation_${contactCount}" required
+              <label class="block text-xs font-medium text-gray-700 mb-1">Relation</label>
+              <select name="contact_relation_${contactCount}"
                 class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm">
                 <option value="family">Family Member</option>
                 <option value="friend">Friend</option>

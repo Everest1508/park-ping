@@ -80,28 +80,75 @@ def add_vehicle(request):
         messages.error(request, f'You have reached the maximum number of vehicles ({max_vehicles}) for your plan.')
         return redirect('parking:vehicle_list')
     
+    # Get user's phone numbers for primary contact dropdown
+    user_phone_numbers = UserPhoneNumber.objects.filter(user=request.user).order_by('-is_primary', 'created_at')
+    
     if request.method == 'POST':
         form = VehicleForm(request.POST, user=request.user)
         if form.is_valid():
             vehicle = form.save(commit=False)
             vehicle.user = request.user
+            
+            # Get primary contact from dropdown (required)
+            primary_phone_key = 'primary_contact_phone'
+            
+            if primary_phone_key not in request.POST or not request.POST.get(primary_phone_key, '').strip():
+                messages.error(request, 'Primary contact number is required.')
+                context = {
+                    'form': form,
+                    'user_plan': user_plan,
+                    'max_vehicles': max_vehicles,
+                    'can_add_vehicle': current_count < max_vehicles,
+                    'user_phone_numbers': user_phone_numbers,
+                    'phone_numbers': user_phone_numbers,
+                    'vehicles': Vehicle.objects.filter(user=request.user),
+                    'active_qr_count': Vehicle.objects.filter(user=request.user, is_qr_active=True).count(),
+                }
+                return render(request, 'parking/add_vehicle.html', context)
+            
             vehicle.save()
             
-            # Save multiple contacts
-            contact_count = 0
+            # Save primary contact (required) - no relation needed, it's the owner's number
+            primary_phone = request.POST.get(primary_phone_key, '').strip()
+            
+            VehicleContact.objects.create(
+                vehicle=vehicle,
+                phone_number=primary_phone,
+                relation='family',  # Default relation for owner's number
+                is_primary=True,
+                show_in_qr=True
+            )
+            
+            # Get or create UserPhoneNumber for primary contact
+            user_phone = UserPhoneNumber.objects.filter(
+                user=request.user,
+                phone_number=primary_phone
+            ).first()
+            
+            if not user_phone:
+                user_phone = UserPhoneNumber.objects.create(
+                    user=request.user,
+                    phone_number=primary_phone,
+                    is_primary=False,  # Don't override existing primary
+                    label="Vehicle Owner Contact"
+                )
+            
+            # Set as contact_phone for the vehicle (required for masking)
+            vehicle.contact_phone = user_phone
+            vehicle.save()
+            
+            # Save additional contacts (optional)
+            contact_count = 1  # Start from 1, since 0 is primary
             while True:
                 phone_key = f'contact_phone_{contact_count}'
                 relation_key = f'contact_relation_{contact_count}'
                 
                 if phone_key in request.POST and relation_key in request.POST:
                     phone_number = request.POST.get(phone_key, '').strip()
-                    relation = request.POST.get(relation_key, 'owner').strip()
+                    relation = request.POST.get(relation_key, 'family').strip()
                     
-                    if phone_number:
-                        # Check if this is the first contact (make it primary)
-                        is_primary = contact_count == 0
-                        
-                        # Default to 'family' if relation is 'owner' (for backward compatibility)
+                    if phone_number:  # Only save if phone number is provided
+                        # Default to 'family' if relation is 'owner'
                         if relation == 'owner':
                             relation = 'family'
                         
@@ -109,24 +156,12 @@ def add_vehicle(request):
                             vehicle=vehicle,
                             phone_number=phone_number,
                             relation=relation,
-                            is_primary=is_primary,
+                            is_primary=False,
                             show_in_qr=True
                         )
                     contact_count += 1
                 else:
                     break
-            
-            # Set the first contact as the primary contact_phone if exists
-            first_contact = VehicleContact.objects.filter(vehicle=vehicle, is_primary=True).first()
-            if first_contact:
-                # Try to find matching UserPhoneNumber
-                user_phone = UserPhoneNumber.objects.filter(
-                    user=request.user,
-                    phone_number=first_contact.phone_number
-                ).first()
-                if user_phone:
-                    vehicle.contact_phone = user_phone
-                    vehicle.save()
             
             # Generate QR code
             generate_qr_code(vehicle, request)
@@ -142,17 +177,16 @@ def add_vehicle(request):
     else:
         form = VehicleForm(user=request.user)
     
-    # Get user's phone numbers
-    phone_numbers = UserPhoneNumber.objects.filter(user=request.user)
-    
     # Calculate stats
     vehicles = Vehicle.objects.filter(user=request.user)
     active_qr_count = vehicles.filter(is_qr_active=True).count()
+    phone_numbers = UserPhoneNumber.objects.filter(user=request.user)
     
     context = {
         'form': form,
         'max_vehicles': max_vehicles,
         'current_count': current_count,
+        'user_phone_numbers': user_phone_numbers,
         'phone_numbers': phone_numbers,
         'vehicles': vehicles,
         'active_qr_count': active_qr_count,
@@ -165,29 +199,75 @@ def edit_vehicle(request, pk):
     """View for editing vehicles"""
     vehicle = get_object_or_404(Vehicle, pk=pk, user=request.user)
     
+    # Get user's phone numbers for primary contact dropdown
+    user_phone_numbers = UserPhoneNumber.objects.filter(user=request.user).order_by('-is_primary', 'created_at')
+    
     if request.method == 'POST':
         form = VehicleForm(request.POST, instance=vehicle, user=request.user)
         if form.is_valid():
-            form.save()
+            vehicle = form.save(commit=False)
+            vehicle.user = request.user
+            vehicle.save()
+            
+            # Get primary contact from dropdown (required)
+            primary_phone_key = 'primary_contact_phone'
+            primary_relation_key = 'primary_contact_relation'
+            
+            if primary_phone_key not in request.POST or not request.POST.get(primary_phone_key, '').strip():
+                messages.error(request, 'Primary contact number is required.')
+                context = {
+                    'form': form,
+                    'vehicle': vehicle,
+                    'user_plan': request.user.current_plan,
+                    'user_phone_numbers': user_phone_numbers,
+                    'existing_contacts': vehicle.contacts.all(),
+                }
+                return render(request, 'parking/edit_vehicle.html', context)
             
             # Delete existing contacts and save new ones
             VehicleContact.objects.filter(vehicle=vehicle).delete()
             
-            # Save multiple contacts
-            contact_count = 0
+            # Save primary contact (required) - no relation needed, it's the owner's number
+            primary_phone = request.POST.get(primary_phone_key, '').strip()
+            
+            VehicleContact.objects.create(
+                vehicle=vehicle,
+                phone_number=primary_phone,
+                relation='family',  # Default relation for owner's number
+                is_primary=True,
+                show_in_qr=True
+            )
+            
+            # Get or create UserPhoneNumber for primary contact
+            user_phone = UserPhoneNumber.objects.filter(
+                user=request.user,
+                phone_number=primary_phone
+            ).first()
+            
+            if not user_phone:
+                user_phone = UserPhoneNumber.objects.create(
+                    user=request.user,
+                    phone_number=primary_phone,
+                    is_primary=False,  # Don't override existing primary
+                    label="Vehicle Owner Contact"
+                )
+            
+            # Set as contact_phone for the vehicle (required for masking)
+            vehicle.contact_phone = user_phone
+            vehicle.save()
+            
+            # Save additional contacts (optional)
+            contact_count = 1  # Start from 1, since 0 is primary
             while True:
                 phone_key = f'contact_phone_{contact_count}'
                 relation_key = f'contact_relation_{contact_count}'
                 
                 if phone_key in request.POST and relation_key in request.POST:
                     phone_number = request.POST.get(phone_key, '').strip()
-                    relation = request.POST.get(relation_key, 'owner').strip()
+                    relation = request.POST.get(relation_key, 'family').strip()
                     
-                    if phone_number:
-                        # Check if this is the first contact (make it primary)
-                        is_primary = contact_count == 0
-                        
-                        # Default to 'family' if relation is 'owner' (for backward compatibility)
+                    if phone_number:  # Only save if phone number is provided
+                        # Default to 'family' if relation is 'owner'
                         if relation == 'owner':
                             relation = 'family'
                         
@@ -195,24 +275,12 @@ def edit_vehicle(request, pk):
                             vehicle=vehicle,
                             phone_number=phone_number,
                             relation=relation,
-                            is_primary=is_primary,
+                            is_primary=False,
                             show_in_qr=True
                         )
                     contact_count += 1
                 else:
                     break
-            
-            # Set the first contact as the primary contact_phone if exists
-            first_contact = VehicleContact.objects.filter(vehicle=vehicle, is_primary=True).first()
-            if first_contact:
-                # Try to find matching UserPhoneNumber
-                user_phone = UserPhoneNumber.objects.filter(
-                    user=request.user,
-                    phone_number=first_contact.phone_number
-                ).first()
-                if user_phone:
-                    vehicle.contact_phone = user_phone
-                    vehicle.save()
             
             messages.success(request, 'Vehicle updated successfully!')
             return redirect('parking:vehicle_list')
@@ -231,6 +299,9 @@ def edit_vehicle(request, pk):
     context = {
         'form': form,
         'vehicle': vehicle,
+        'user_plan': request.user.current_plan,
+        'user_phone_numbers': user_phone_numbers,
+        'existing_contacts': existing_contacts,
     }
     return render(request, 'parking/edit_vehicle.html', context)
 
@@ -756,37 +827,28 @@ def get_masked_number_api(request, qr_id):
                 'vehicle_masking_disabled': True
             }, status=403)
         
-        # Check if user has masking enabled in their plan
-        if not vehicle.user.current_plan or not vehicle.user.current_plan.number_masking:
-            return JsonResponse({
-                'error': 'Number masking not available for your current plan',
-                'upgrade_required': True
-            }, status=403)
-        
-        # Check plan limits for concurrent masking sessions
+        # Masking is available for all plans
+        # Check plan limits for concurrent masking sessions (if plan exists)
         user_plan = vehicle.user.current_plan
+        max_sessions = 999  # Default unlimited for all plans
+        
+        if user_plan and user_plan.max_masking_sessions > 0:
+            max_sessions = user_plan.max_masking_sessions
+        
         active_sessions_count = PhoneNumberMasking.objects.filter(
             vehicle__user=vehicle.user,
             status='active',
             expires_at__gt=timezone.now()
         ).count()
         
-        # Check if plan allows masking sessions
-        if user_plan.max_masking_sessions == 0:
+        # Check if user has reached their session limit (only if limit is set)
+        if max_sessions < 999 and active_sessions_count >= max_sessions:
             return JsonResponse({
-                'error': 'Number masking is not available for your current plan. Please upgrade to a premium plan to use this feature.',
-                'upgrade_required': True,
-                'plan_name': user_plan.name if user_plan else 'Free Plan'
-            }, status=403)
-        
-        # Check if user has reached their session limit
-        if active_sessions_count >= user_plan.max_masking_sessions:
-            return JsonResponse({
-                'error': f'You have reached the maximum number of concurrent masking sessions ({user_plan.max_masking_sessions}) for your {user_plan.name}. Please wait for existing sessions to expire or upgrade your plan.',
+                'error': f'You have reached the maximum number of concurrent masking sessions ({max_sessions}). Please wait for existing sessions to expire.',
                 'limit_reached': True,
                 'current_sessions': active_sessions_count,
-                'max_sessions': user_plan.max_masking_sessions,
-                'plan_name': user_plan.name
+                'max_sessions': max_sessions,
+                'plan_name': user_plan.name if user_plan else 'Your Plan'
             }, status=403)
         
         # Get the original phone number
@@ -977,3 +1039,235 @@ Be friendly, helpful, and provide accurate information about ParkPing features. 
         return JsonResponse({'error': 'Invalid JSON'}, status=400)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+
+@csrf_exempt
+def initiate_twilio_call(request, qr_id):
+    """
+    API endpoint to initiate a Twilio call connection.
+    Scanner enters their phone number, and Twilio connects both parties.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    try:
+        from .twilio_service import TwilioCallService
+        from .models import PhoneNumberMasking
+        from django.utils import timezone
+        from datetime import timedelta
+        
+        data = json.loads(request.body)
+        scanner_number = data.get('phone_number', '').strip()
+        owner_phone = data.get('owner_phone', '').strip()  # Get selected owner phone
+        
+        if not scanner_number:
+            return JsonResponse({'error': 'Phone number is required'}, status=400)
+        
+        # Validate phone number
+        if not TwilioCallService.validate_phone_number(scanner_number):
+            return JsonResponse({'error': 'Invalid phone number format'}, status=400)
+        
+        # Get the vehicle
+        vehicle = Vehicle.objects.get(qr_unique_id=qr_id, is_qr_active=True)
+        
+        # Note: Calls are always allowed via Twilio, regardless of masking_enabled setting
+        # Masking is available for all plans
+        # Check plan limits for concurrent masking sessions (if plan exists)
+        user_plan = vehicle.user.current_plan
+        max_sessions = 999  # Default unlimited for all plans
+        
+        if user_plan and user_plan.max_masking_sessions > 0:
+            max_sessions = user_plan.max_masking_sessions
+        
+        active_sessions_count = PhoneNumberMasking.objects.filter(
+            vehicle__user=vehicle.user,
+            status='active',
+            expires_at__gt=timezone.now()
+        ).count()
+        
+        # Check if user has reached their session limit (only if limit is set)
+        if max_sessions < 999 and active_sessions_count >= max_sessions:
+            return JsonResponse({
+                'error': f'You have reached the maximum number of concurrent masking sessions ({max_sessions}). Please wait for existing sessions to expire.',
+                'limit_reached': True,
+                'current_sessions': active_sessions_count,
+                'max_sessions': max_sessions,
+                'plan_name': user_plan.name if user_plan else 'Your Plan'
+            }, status=403)
+        
+        # Get the owner phone number - use selected one or fallback to contact_phone
+        if owner_phone:
+            # Validate that the selected phone belongs to this vehicle's contacts
+            contact = VehicleContact.objects.filter(
+                vehicle=vehicle,
+                phone_number=owner_phone,
+                show_in_qr=True
+            ).first()
+            if contact:
+                owner_number = owner_phone
+            else:
+                return JsonResponse({'error': 'Invalid contact selected'}, status=400)
+        elif vehicle.contact_phone:
+            owner_number = vehicle.contact_phone.phone_number
+        else:
+            # Try to get from contacts
+            first_contact = vehicle.contacts.filter(show_in_qr=True).first()
+            if first_contact:
+                owner_number = first_contact.phone_number
+            else:
+                return JsonResponse({'error': 'No contact phone number available'}, status=404)
+        
+        # Get the base URL from request or settings
+        # For Twilio, we need a publicly accessible URL
+        base_url = getattr(settings, 'BASE_URL', None)
+        if not base_url:
+            # Try to get from request
+            base_url = request.build_absolute_uri('/').rstrip('/')
+            # If it's localhost, we need a public URL (use ngrok or similar)
+            if 'localhost' in base_url or '127.0.0.1' in base_url:
+                return JsonResponse({
+                    'error': 'Twilio requires a publicly accessible URL. Please set BASE_URL in settings.py to your public URL (e.g., from ngrok for local development).',
+                    'details': 'For local development, use ngrok: https://ngrok.com/'
+                }, status=500)
+        
+        # Create or update masking session FIRST (before initiating call)
+        # This ensures the session exists when Twilio calls back
+        masking_session, created = PhoneNumberMasking.objects.get_or_create(
+            vehicle=vehicle,
+            original_phone=owner_number,
+            defaults={
+                'masked_phone': scanner_number,  # Store scanner number for reference
+                'scanner_phone': scanner_number,
+                'expires_at': timezone.now() + timedelta(minutes=30),
+                'call_count': 0,
+                'status': 'active',
+            }
+        )
+        
+        if not created:
+            # Update existing session
+            masking_session.scanner_phone = scanner_number
+            masking_session.status = 'active'
+            masking_session.expires_at = timezone.now() + timedelta(minutes=30)
+            masking_session.save()
+        
+        # Now initiate Twilio call connection
+        call_result = TwilioCallService.connect_call(
+            owner_number=owner_number,
+            scanner_number=scanner_number,
+            qr_id=str(qr_id),
+            base_url=base_url
+        )
+        
+        if not call_result.get('success'):
+            return JsonResponse({
+                'error': call_result.get('error', 'Failed to initiate call'),
+                'details': call_result
+            }, status=500)
+        
+        # Update session with call SID
+        masking_session.twilio_call_sid = call_result.get('call_sid')
+        masking_session.increment_call_count()
+        masking_session.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Call initiated. You will be connected shortly.',
+            'call_sid': call_result.get('call_sid'),
+            'status': call_result.get('status'),
+            'session_id': str(masking_session.session_id)
+        })
+        
+    except Vehicle.DoesNotExist:
+        return JsonResponse({'error': 'Vehicle not found'}, status=404)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@csrf_exempt
+def twilio_connect_twiml(request, qr_id):
+    """
+    Twilio TwiML endpoint that connects the scanner's number when owner answers.
+    This is called by Twilio when the owner picks up the phone.
+    """
+    try:
+        from .twilio_service import TwilioCallService
+        from .models import PhoneNumberMasking
+        import logging
+        
+        logger = logging.getLogger(__name__)
+        
+        # Get the masking session to find scanner's number
+        # We'll get it from the most recent active session for this QR
+        vehicle = Vehicle.objects.get(qr_unique_id=qr_id, is_qr_active=True)
+        
+        # Get the most recent active session
+        session = PhoneNumberMasking.objects.filter(
+            vehicle=vehicle,
+            status='active',
+            expires_at__gt=timezone.now()
+        ).order_by('-created_at').first()
+        
+        if not session or not session.scanner_phone:
+            # Log for debugging
+            logger.error(f"No active session or scanner phone found for QR {qr_id}")
+            from twilio.twiml.voice_response import VoiceResponse
+            response = VoiceResponse()
+            response.say('Sorry, we could not find the number to connect. Please try again.', voice='alice')
+            return HttpResponse(str(response), content_type='text/xml')
+        
+        # Log for debugging
+        logger.info(f"Connecting scanner {session.scanner_phone} for QR {qr_id}")
+        
+        # Generate TwiML to connect scanner's number
+        twiml = TwilioCallService.generate_twiml_for_connection(session.scanner_phone)
+        
+        # Log the TwiML for debugging
+        logger.info(f"Generated TwiML: {twiml}")
+        
+        return HttpResponse(twiml, content_type='text/xml')
+        
+    except Vehicle.DoesNotExist:
+        from twilio.twiml.voice_response import VoiceResponse
+        response = VoiceResponse()
+        response.say('Vehicle not found.', voice='alice')
+        return HttpResponse(str(response), content_type='text/xml')
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error in twilio_connect_twiml: {str(e)}", exc_info=True)
+        from twilio.twiml.voice_response import VoiceResponse
+        response = VoiceResponse()
+        response.say('An error occurred. Please try again.', voice='alice')
+        return HttpResponse(str(response), content_type='text/xml')
+
+
+@csrf_exempt
+def twilio_status_callback(request, qr_id):
+    """
+    Twilio status callback endpoint for tracking call status.
+    Optional - can be used for analytics and logging.
+    """
+    try:
+        from .models import PhoneNumberMasking
+        
+        call_sid = request.POST.get('CallSid')
+        call_status = request.POST.get('CallStatus')
+        
+        if call_sid:
+            # Update masking session with call status
+            session = PhoneNumberMasking.objects.filter(
+                twilio_call_sid=call_sid
+            ).first()
+            
+            if session:
+                # You can store call status in the model if needed
+                # For now, we'll just log it
+                pass
+        
+        return HttpResponse(status=200)
+        
+    except Exception as e:
+        return HttpResponse(status=200)  # Always return 200 to Twilio
