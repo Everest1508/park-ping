@@ -1042,16 +1042,16 @@ Be friendly, helpful, and provide accurate information about ParkPing features. 
 
 
 @csrf_exempt
-def initiate_twilio_call(request, qr_id):
+def initiate_call(request, qr_id):
     """
-    API endpoint to initiate a Twilio call connection.
-    Scanner enters their phone number, and Twilio connects both parties.
+    API endpoint to initiate a call connection.
+    Scanner enters their phone number, and API connects both parties.
     """
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed'}, status=405)
     
     try:
-        from .twilio_service import TwilioCallService
+        from .call_service import CallService
         from .models import PhoneNumberMasking
         from django.utils import timezone
         from datetime import timedelta
@@ -1064,15 +1064,12 @@ def initiate_twilio_call(request, qr_id):
             return JsonResponse({'error': 'Phone number is required'}, status=400)
         
         # Validate phone number
-        if not TwilioCallService.validate_phone_number(scanner_number):
+        if not CallService.validate_phone_number(scanner_number):
             return JsonResponse({'error': 'Invalid phone number format'}, status=400)
         
         # Get the vehicle
         vehicle = Vehicle.objects.get(qr_unique_id=qr_id, is_qr_active=True)
         
-        # Note: Calls are always allowed via Twilio, regardless of masking_enabled setting
-        # Masking is available for all plans
-        # Check plan limits for concurrent masking sessions (if plan exists)
         user_plan = vehicle.user.current_plan
         max_sessions = 999  # Default unlimited for all plans
         
@@ -1085,7 +1082,6 @@ def initiate_twilio_call(request, qr_id):
             expires_at__gt=timezone.now()
         ).count()
         
-        # Check if user has reached their session limit (only if limit is set)
         if max_sessions < 999 and active_sessions_count >= max_sessions:
             return JsonResponse({
                 'error': f'You have reached the maximum number of concurrent masking sessions ({max_sessions}). Please wait for existing sessions to expire.',
@@ -1095,9 +1091,8 @@ def initiate_twilio_call(request, qr_id):
                 'plan_name': user_plan.name if user_plan else 'Your Plan'
             }, status=403)
         
-        # Get the owner phone number - use selected one or fallback to contact_phone
+        # Get the owner phone number
         if owner_phone:
-            # Validate that the selected phone belongs to this vehicle's contacts
             contact = VehicleContact.objects.filter(
                 vehicle=vehicle,
                 phone_number=owner_phone,
@@ -1110,33 +1105,18 @@ def initiate_twilio_call(request, qr_id):
         elif vehicle.contact_phone:
             owner_number = vehicle.contact_phone.phone_number
         else:
-            # Try to get from contacts
             first_contact = vehicle.contacts.filter(show_in_qr=True).first()
             if first_contact:
                 owner_number = first_contact.phone_number
             else:
                 return JsonResponse({'error': 'No contact phone number available'}, status=404)
         
-        # Get the base URL from request or settings
-        # For Twilio, we need a publicly accessible URL
-        base_url = getattr(settings, 'BASE_URL', None)
-        if not base_url:
-            # Try to get from request
-            base_url = request.build_absolute_uri('/').rstrip('/')
-            # If it's localhost, we need a public URL (use ngrok or similar)
-            if 'localhost' in base_url or '127.0.0.1' in base_url:
-                return JsonResponse({
-                    'error': 'Twilio requires a publicly accessible URL. Please set BASE_URL in settings.py to your public URL (e.g., from ngrok for local development).',
-                    'details': 'For local development, use ngrok: https://ngrok.com/'
-                }, status=500)
-        
-        # Create or update masking session FIRST (before initiating call)
-        # This ensures the session exists when Twilio calls back
+        # Create or update masking session
         masking_session, created = PhoneNumberMasking.objects.get_or_create(
             vehicle=vehicle,
             original_phone=owner_number,
             defaults={
-                'masked_phone': scanner_number,  # Store scanner number for reference
+                'masked_phone': scanner_number,
                 'scanner_phone': scanner_number,
                 'expires_at': timezone.now() + timedelta(minutes=30),
                 'call_count': 0,
@@ -1145,18 +1125,16 @@ def initiate_twilio_call(request, qr_id):
         )
         
         if not created:
-            # Update existing session
             masking_session.scanner_phone = scanner_number
             masking_session.status = 'active'
             masking_session.expires_at = timezone.now() + timedelta(minutes=30)
             masking_session.save()
         
-        # Now initiate Twilio call connection
-        call_result = TwilioCallService.connect_call(
+        # Initiate Call
+        call_result = CallService.connect_call(
             owner_number=owner_number,
             scanner_number=scanner_number,
-            qr_id=str(qr_id),
-            base_url=base_url
+            qr_id=str(qr_id)
         )
         
         if not call_result.get('success'):
@@ -1165,7 +1143,7 @@ def initiate_twilio_call(request, qr_id):
                 'details': call_result
             }, status=500)
         
-        # Update session with call SID
+        # Update session with call SID if any
         masking_session.twilio_call_sid = call_result.get('call_sid')
         masking_session.increment_call_count()
         masking_session.save()
@@ -1185,89 +1163,3 @@ def initiate_twilio_call(request, qr_id):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
-
-@csrf_exempt
-def twilio_connect_twiml(request, qr_id):
-    """
-    Twilio TwiML endpoint that connects the scanner's number when owner answers.
-    This is called by Twilio when the owner picks up the phone.
-    """
-    try:
-        from .twilio_service import TwilioCallService
-        from .models import PhoneNumberMasking
-        import logging
-        
-        logger = logging.getLogger(__name__)
-        
-        # Get the masking session to find scanner's number
-        # We'll get it from the most recent active session for this QR
-        vehicle = Vehicle.objects.get(qr_unique_id=qr_id, is_qr_active=True)
-        
-        # Get the most recent active session
-        session = PhoneNumberMasking.objects.filter(
-            vehicle=vehicle,
-            status='active',
-            expires_at__gt=timezone.now()
-        ).order_by('-created_at').first()
-        
-        if not session or not session.scanner_phone:
-            # Log for debugging
-            logger.error(f"No active session or scanner phone found for QR {qr_id}")
-            from twilio.twiml.voice_response import VoiceResponse
-            response = VoiceResponse()
-            response.say('Sorry, we could not find the number to connect. Please try again.', voice='alice')
-            return HttpResponse(str(response), content_type='text/xml')
-        
-        # Log for debugging
-        logger.info(f"Connecting scanner {session.scanner_phone} for QR {qr_id}")
-        
-        # Generate TwiML to connect scanner's number
-        twiml = TwilioCallService.generate_twiml_for_connection(session.scanner_phone)
-        
-        # Log the TwiML for debugging
-        logger.info(f"Generated TwiML: {twiml}")
-        
-        return HttpResponse(twiml, content_type='text/xml')
-        
-    except Vehicle.DoesNotExist:
-        from twilio.twiml.voice_response import VoiceResponse
-        response = VoiceResponse()
-        response.say('Vehicle not found.', voice='alice')
-        return HttpResponse(str(response), content_type='text/xml')
-    except Exception as e:
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.error(f"Error in twilio_connect_twiml: {str(e)}", exc_info=True)
-        from twilio.twiml.voice_response import VoiceResponse
-        response = VoiceResponse()
-        response.say('An error occurred. Please try again.', voice='alice')
-        return HttpResponse(str(response), content_type='text/xml')
-
-
-@csrf_exempt
-def twilio_status_callback(request, qr_id):
-    """
-    Twilio status callback endpoint for tracking call status.
-    Optional - can be used for analytics and logging.
-    """
-    try:
-        from .models import PhoneNumberMasking
-        
-        call_sid = request.POST.get('CallSid')
-        call_status = request.POST.get('CallStatus')
-        
-        if call_sid:
-            # Update masking session with call status
-            session = PhoneNumberMasking.objects.filter(
-                twilio_call_sid=call_sid
-            ).first()
-            
-            if session:
-                # You can store call status in the model if needed
-                # For now, we'll just log it
-                pass
-        
-        return HttpResponse(status=200)
-        
-    except Exception as e:
-        return HttpResponse(status=200)  # Always return 200 to Twilio

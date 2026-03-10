@@ -47,9 +47,9 @@ class VehicleForm(forms.ModelForm):
             # Masking is available for all plans
             user_plan = self.user.current_plan
             if user_plan and user_plan.max_masking_sessions > 0:
-                self.fields['masking_enabled'].help_text = f"Enable number masking for this vehicle (Plan allows {user_plan.max_masking_sessions} concurrent sessions). When enabled, the first contact number you add will be used for Twilio call connections."
+                self.fields['masking_enabled'].help_text = f"Enable number masking for this vehicle (Plan allows {user_plan.max_masking_sessions} concurrent sessions). When enabled, the first contact number you add will be used for call connections."
             else:
-                self.fields['masking_enabled'].help_text = "Enable number masking for this vehicle. When enabled, the first contact number you add will be used for Twilio call connections."
+                self.fields['masking_enabled'].help_text = "Enable number masking for this vehicle. When enabled, the first contact number you add will be used for call connections."
     
     def clean_license_plate(self):
         license_plate = self.cleaned_data['license_plate']

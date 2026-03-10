@@ -35,8 +35,7 @@ SECRET_KEY = 'django-insecure-b(w!m0%+*mijsm2&gwv=m6p4_s-9g1s0512-v&)l&u@40jn3gc
 DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
-
-# Base URL for Twilio callbacks (MUST be publicly accessible)
+# Base URL for API callbacks (MUST be publicly accessible)
 # For local development, use ngrok: https://ngrok.com/
 # Set this as an environment variable or in .env file
 BASE_URL = os.environ.get('BASE_URL', '') 
@@ -187,9 +186,4 @@ EMERGENCY_NUMBERS = {
 # Set this as an environment variable or in .env file
 GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '')
 
-# Twilio Configuration for Call Connection
-# Get these from https://www.twilio.com/console
-# Set these as environment variables or in .env file
-TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID', '')
-TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN', '')
-TWILIO_PHONE_NUMBER = os.environ.get('TWILIO_PHONE_NUMBER', '')
+

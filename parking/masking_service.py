@@ -18,7 +18,6 @@ class MockMaskingService:
     Mock implementation of a phone number masking service.
     
     In production, this would interface with services like:
-    - Twilio Proxy
     - Vonage Number Masking
     - Custom masking solutions
     """
